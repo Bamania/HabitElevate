@@ -19,7 +19,7 @@ export default function ContactForm() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-8">
-        <h2 className="text-2xl font-semibold text-center">Get in Touch</h2>
+        <h2 className="text-2xl font-semibold text-center">Get in Touch</h2> 
         <p className="text-center text-gray-600">Questions or feedback? We’d love to hear from you.</p>
 
         <form onSubmit={handleSubmit} className="mt-6">

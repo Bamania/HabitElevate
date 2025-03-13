@@ -1,8 +1,10 @@
-
+"use client";
 import Image from "next/image";
 import StairImage from "../../public/images/Stair.jpg";
 import { Sprout, ChevronRight, ArrowRight, CheckCircle } from 'lucide-react';
+import { useRouter } from "next/navigation";
 export default function Home() {
+  const route=useRouter();  
   return (
     <>
   <div className="min-h-screen bg-gradient-to-b from-white to-teal-50 flex flex-col">
@@ -41,10 +43,10 @@ export default function Home() {
             Personalized plans to turn small changes into big results.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row">
-            <a href="#signup" className="bg-emerald-500 text-white px-8 py-4 rounded-md text-lg font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center mb-4 sm:mb-0 sm:mr-4">
+            <button onClick={()=>route.push("/input")} className="bg-emerald-500 text-white px-8 py-4 rounded-md text-lg font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center mb-4 sm:mb-0 sm:mr-4">
               Start for Free
               <ArrowRight className="ml-2 h-5 w-5" />
-            </a>
+            </button>
             <a href="#learn-more" className="border border-gray-300 text-gray-600 px-8 py-4 rounded-md text-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
               Learn More
               <ChevronRight className="ml-2 h-5 w-5" />

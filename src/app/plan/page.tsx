@@ -1,8 +1,12 @@
+"use client"
 import Link from "next/link"
 import { Eye, Star, Feather, Heart, ArrowLeft, Lock, BarChart2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-
+import { useAppSelector } from "@/lib/hooks"
 export default function HabitPlan() {
+
+  const Generated_Content=useAppSelector((state)=>state.GENERATED_TEXT.generatedText)
+  console.log(Generated_Content,"Generated Content from the store")
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -46,16 +50,16 @@ export default function HabitPlan() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
-                <span className="text-gray-600">Set a daily reminder at 8:00 AM on your phone</span>
+                <span className="text-gray-600">{Generated_Content.obvious}</span>
               </li>
-              <li className="flex items-start gap-2">
+              {/* <li className="flex items-start gap-2">
                 <div className="mt-1 rounded-full bg-cyan-400 p-0.5">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
                 <span className="text-gray-600">Place your running shoes by the door</span>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -72,16 +76,16 @@ export default function HabitPlan() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
-                <span className="text-gray-600">Join a running group for social motivation</span>
+                <span className="text-gray-600">{Generated_Content.attractive}</span>
               </li>
-              <li className="flex items-start gap-2">
+              {/* <li className="flex items-start gap-2">
                 <div className="mt-1 rounded-full bg-cyan-400 p-0.5">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
                 <span className="text-gray-600">Get new workout gear as a milestone reward</span>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -98,16 +102,16 @@ export default function HabitPlan() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
-                <span className="text-gray-600">Start with just 10 minutes of running</span>
+                <span className="text-gray-600">{Generated_Content.easy}</span>
               </li>
-              <li className="flex items-start gap-2">
+              {/* <li className="flex items-start gap-2">
                 <div className="mt-1 rounded-full bg-cyan-400 p-0.5">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
                 <span className="text-gray-600">Prepare workout clothes the night before</span>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -124,16 +128,16 @@ export default function HabitPlan() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
-                <span className="text-gray-600">Track your runs in the HabitElevate app</span>
+                <span className="text-gray-600">{Generated_Content.satisfying}</span>
               </li>
-              <li className="flex items-start gap-2">
+              {/* <li className="flex items-start gap-2">
                 <div className="mt-1 rounded-full bg-cyan-400 p-0.5">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                   </svg>
                 </div>
                 <span className="text-gray-600">Reward yourself with a healthy breakfast after</span>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

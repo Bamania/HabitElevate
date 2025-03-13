@@ -2,32 +2,60 @@
 
 import React, { useState } from 'react';
 import { Sprout, ChevronLeft, Send } from 'lucide-react';
-
+import { useAppDispatch } from '@/lib/hooks';
+import { setGeneratedText } from '@/lib/features/aiGeneratedslice/GeneratedSlice';
+import { useRouter } from 'next/navigation';
 function InputPage() {
-  const [formData, setFormData] = useState({
-    habitName: '',
-    frequency: '',
-    motivation: '',
-    obstacles: '',
-    idealTime: '',
-    resources: '',
-    reward: ''
-  });
+  const [formData,setFormData] =useState({
+    habitName:'',
+    frequency:'',
+    motivation:'',
+    obstacles:'',
+  })
+   const route=useRouter();  
+  const dispatch=useAppDispatch();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Here you would typically send the data to your backend
-    alert('Thank you! Your personalized habit plan is being generated.');
-  };
+  const handleSubmit=async(e:any)=>{
+    e.preventDefault()
+    alert("clicked")
+    const response=await fetch("/api/generate",{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(formData)
+      
+    }) 
+    const generatedData=await response.json()
+    console.log("Aigen Response",generatedData.data);
+    const splitArr=generatedData.data.split('`')
+    const AIGenContent=splitArr[3].split("json")[1];
+    const jsonData=JSON.parse(AIGenContent)
+    
+    dispatch(setGeneratedText(jsonData))
+    route.push('/plan')
+  }
+
+  const handleChange=(e:any)=>{
+    
+    setFormData({...formData,[e.target.name]:e.target.value})
+    
+    console.log(formData) 
+  }
+
+//   function debounce(func,delay){
+//     let TimerId;
+//     return ()=>{
+//       clearTimeout(TimerId);
+//       TimerId= setTimeout(func(),delay);
+//     }
+//   }
+
+//   function radFunc(){
+//     console.log("radFunc")
+//   }
+// const temp_function= debounce(radFunc,2000)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-teal-50 flex flex-col">
