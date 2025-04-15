@@ -1,19 +1,25 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { PayloadAction } from "@reduxjs/toolkit";
 
+interface GeneratedTextState {
+    generatedText: {
+        obvious?: string;
+        attractive?: string;
+        easy?: string;
+        satisfying?: string;
+    }
+}
 
-
-const AiGeneratedInitialState=({
-    generatedText:""
-});
+const AiGeneratedInitialState: GeneratedTextState = {
+    generatedText: {}
+};
 
 export const aiGeneratedSlice = createSlice({
     name:"aiGenerated",
     initialState:AiGeneratedInitialState,
     reducers:{
-        setGeneratedText:(state,action)=>{
-            // expecting the payload to be an object
-            state.generatedText=action.payload
+        setGeneratedText:(state, action: PayloadAction<GeneratedTextState['generatedText']>)=>{
+            state.generatedText = action.payload;
         }
     }
 })

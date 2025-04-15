@@ -3,10 +3,13 @@ import Link from "next/link"
 import { Eye, Star, Feather, Heart, ArrowLeft, Lock, BarChart2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useAppSelector } from "@/lib/hooks"
-export default function HabitPlan() {
+import { useState } from "react"
+import ReminderForm from "@/components/ui/ReminderForm"
 
-  const Generated_Content=useAppSelector((state)=>state.GENERATED_TEXT.generatedText)
-  console.log(Generated_Content,"Generated Content from the store")
+export default function HabitPlan() {
+  const [showReminderForm, setShowReminderForm] = useState(false);
+  const Generated_Content = useAppSelector((state) => state.GENERATED_TEXT.generatedText)
+  console.log(Generated_Content, "Generated Content from the store")
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -51,7 +54,18 @@ export default function HabitPlan() {
                   </svg>
                 </div>
                 <span className="text-gray-600">{Generated_Content.obvious}</span>
+                <Button 
+                  onClick={() => setShowReminderForm(true)}
+                  className="ml-2 bg-cyan-400 hover:bg-cyan-500 text-white"
+                >
+                  Remind Me
+                </Button>
               </li>
+              {showReminderForm && (
+                <div className="mt-4">
+                  <ReminderForm />
+                </div>
+              )}
               {/* <li className="flex items-start gap-2">
                 <div className="mt-1 rounded-full bg-cyan-400 p-0.5">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
