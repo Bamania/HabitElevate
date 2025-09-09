@@ -3,8 +3,6 @@ import type { Metadata } from "next";
 // import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "../lib/storeprovider";
-import { PersistGate } from 'redux-persist/integration/react';
-import { persistor } from "../lib/store";
 
 
 // const geistSans = Geist({
@@ -32,9 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-background font-sans antialiased">
         <StoreProvider>
-          <PersistGate loading={null} persistor={persistor}>
-            {children}
-          </PersistGate>
+          {children}
         </StoreProvider>
       </body>
     </html>
