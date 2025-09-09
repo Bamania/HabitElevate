@@ -1,20 +1,40 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { config } from 'process'
-import { aiGeneratedSlice } from './features/aiGeneratedslice/GeneratedSlice'
+import { configureStore } from '@reduxjs/toolkit';
+import { aiGeneratedSlice } from './features/aiGeneratedslice/GeneratedSlice';
+import todoReducer from './features/todoSlice/todoSlice';
+import storage from 'redux-persist/lib/storage';
+import { persistReducer, persistStore } from 'redux-persist';
+import { combineReducers } from 'redux';
 
-export const Store=()=>{
-    return configureStore({
-        reducer: {
-//  list down your reducers here ! 
-    GENERATED_TEXT:aiGeneratedSlice.reducer
-        
-   } })
+// Define the persist config
+const persistConfig = {
+  key: 'root',
+  storage,
+};
 
-}
+// Combine reducers
+const rootReducer = combineReducers({
+  GENERATED_TEXT: aiGeneratedSlice.reducer,
+  todos: todoReducer,
+});
 
-// Infer the type of makeStore
+// Create a persisted reducer
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export type AppStore = ReturnType<typeof Store>
+// Create the store instance
+export const store = configureStore({
+  reducer: persistedReducer,
+  // middleware: getDefaultMiddleware({
+  //   serializableCheck: {
+  //     ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+  //   },
+  // }),
+});
+
+// Create the persistor
+export const persistor = persistStore(store);
+
+// Infer the type of the store
+export type AppStore = typeof store;
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<AppStore['getState']>
-export type AppDispatch = AppStore['dispatch']
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

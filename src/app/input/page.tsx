@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sprout, ChevronLeft, Send } from 'lucide-react';
-import { useAppDispatch } from '@/lib/hooks';
-import { setGeneratedText } from '@/lib/features/aiGeneratedslice/GeneratedSlice';
-import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '../../lib/hooks';
+import { setGeneratedText } from '../../lib/features/aiGeneratedslice/GeneratedSlice';
+import { useRouter, useSearchParams } from 'next/navigation';
 function InputPage() {
   const [formData,setFormData] =useState({
     habitName:'',
@@ -12,8 +12,20 @@ function InputPage() {
     motivation:'',
     obstacles:'',
   })
-   const route=useRouter();  
-  const dispatch=useAppDispatch();
+   const route=useRouter();
+   const searchParams = useSearchParams();
+   const dispatch=useAppDispatch();
+
+   // Pre-fill form with prompt from home page
+   useEffect(() => {
+     const prompt = searchParams.get('prompt');
+     if (prompt) {
+       setFormData(prev => ({
+         ...prev,
+         habitName: prompt
+       }));
+     }
+   }, [searchParams]);
 
 
   const handleSubmit=async(e:any)=>{

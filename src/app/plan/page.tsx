@@ -1,9 +1,15 @@
 "use client"
 import Link from "next/link"
 import { Eye, Star, Feather, Heart, ArrowLeft, Lock, BarChart2 } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { useAppSelector } from "@/lib/hooks"
+import { Button } from "../../components/ui/button"
+import { useAppSelector } from "../../lib/hooks"
+import { useState } from "react"
+import ReminderForm from "../Components/ReminderForm"
 export default function HabitPlan() {
+const [reminderForm, setreminderForm] = useState(false);
+const  OpenReminderForm=()=>{
+    setreminderForm(true);
+  }
 
   const Generated_Content=useAppSelector((state)=>state.GENERATED_TEXT.generatedText)
   console.log(Generated_Content,"Generated Content from the store")
@@ -52,14 +58,29 @@ export default function HabitPlan() {
                 </div>
                 <span className="text-gray-600">{Generated_Content.obvious}</span>
               </li>
-              {/* <li className="flex items-start gap-2">
-                <div className="mt-1 rounded-full bg-cyan-400 p-0.5">
-                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                  </svg>
+              <button 
+                onClick={OpenReminderForm} 
+                className="bg-cyan-400 transition-all duration-300 hover:bg-cyan-500 text-white px-4 py-1 rounded-md"
+              > 
+                Remind me! 
+              </button>
+
+              {reminderForm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">Set Reminder</h3>
+                      <button 
+                        onClick={() => setreminderForm(false)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <ReminderForm />
+                  </div>
                 </div>
-                <span className="text-gray-600">Place your running shoes by the door</span>
-              </li> */}
+              )}
             </ul>
           </div>
 

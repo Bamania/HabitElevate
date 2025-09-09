@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-require('dotenv').config();
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-// type for the input
+
 interface RequestBody {
     input: string;
 }
@@ -43,5 +43,13 @@ const responeData:ResponseData ={
 }
 return NextResponse.json(responeData)
 
-
 }
+
+
+
+
+
+
+
+
+
