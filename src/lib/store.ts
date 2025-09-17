@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { aiGeneratedSlice } from './features/aiGeneratedslice/GeneratedSlice';
 import todoReducer from './features/todoSlice/todoSlice';
+import uiStateReducer from './features/uiStateSlice/uiStateSlice';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer, persistStore } from 'redux-persist';
 import { combineReducers } from 'redux';
@@ -15,6 +16,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   GENERATED_TEXT: aiGeneratedSlice.reducer,
   todos: todoReducer,
+  uiState: uiStateReducer,
 });
 
 // Create a persisted reducer

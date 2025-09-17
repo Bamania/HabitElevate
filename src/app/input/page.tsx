@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Sprout, ChevronLeft, Send } from 'lucide-react';
-import { useAppDispatch } from '../../lib/hooks';
+import { useAppDispatch } from '../../lib/useAppReduxHooks';
 import { setGeneratedText } from '../../lib/features/aiGeneratedslice/GeneratedSlice';
 import { useRouter, useSearchParams } from 'next/navigation';
 function InputPage() {
