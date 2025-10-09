@@ -4,7 +4,8 @@ import { Send, Bot, User, Sparkles, FileText } from 'lucide-react';
 import { useAGUI } from "../../lib/customHooks/useAGUI";
 import HabitPlanForm from "./HabitPlanForm";
 import { GenerativeUIRenderer } from "./GenerativeUIComponents";
-
+import StatusIndicator from "./StatusIndicator";
+import { useCopilotAction } from "@copilotkit/react-core"; 
 interface Message {
   id: string;
   content: string;
@@ -16,6 +17,10 @@ interface Message {
   generativeUI?: {
     type: string;
     data: any;
+  };
+  status?: {
+    status: 'thinking' | 'executing_tools' | 'generating_ui' | 'complete';
+    message: string;
   };
 }
 
@@ -36,7 +41,7 @@ const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_use
   const [showingFormId, setShowingFormId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { sendMessage, isLoading, error } = useAGUI();
+  const { sendMessage, isLoading, error, currentStatus } = useAGUI();
 
   // Function to detect if response should trigger a form
   const shouldShowForm = (content: string): boolean => {
@@ -189,6 +194,21 @@ const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_use
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  useCopilotAction({
+    name: "calling_tool",
+    available: "enabled", // Don't allow the agent or UI to call this tool as its only for rendering
+    render: ({ status, args }) => {
+      return (
+        <p className="text-gray-500 mt-2">
+          {status !== "complete" && "Calling Calling Tool..."}
+          {status === "complete" &&
+            `Called the Calling Tool for ${args.phone_number}.`}
+        </p>
+      );
+    },
+  });
+
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -230,13 +250,27 @@ const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_use
       await sendMessage(
         messageToSend,
         userId,
-        // Chunk callback for real-time streaming
         (chunk: string) => {
           accumulatedContent += chunk;
           setMessages(prev => 
             prev.map(msg => 
               msg.id === aiMessageId 
                 ? { ...msg, content: accumulatedContent, isStreaming: true }
+                : msg
+            )
+          );
+        },
+        (status: { status: string; message: string }) => {
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === aiMessageId 
+                ? { 
+                    ...msg, 
+                    status: {
+                      status: status.status as 'thinking' | 'executing_tools' | 'generating_ui' | 'complete',
+                      message: status.message
+                    }
+                  }
                 : msg
             )
           );
@@ -341,6 +375,21 @@ Please create a detailed habit plan based on this information.`;
                 : msg
             )
           );
+        },
+        (status: { status: string; message: string }) => {
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === aiMessageId 
+                ? { 
+                    ...msg, 
+                    status: {
+                      status: status.status as 'thinking' | 'executing_tools' | 'generating_ui' | 'complete',
+                      message: status.message
+                    }
+                  }
+                : msg
+            )
+          );
         }
       );
 
@@ -374,7 +423,7 @@ Please create a detailed habit plan based on this information.`;
   // Method to send message externally (for suggestions)
   const sendExternalMessage = async (message: string) => {
     setPrompt(message);
-    // Simulate form submit
+    
     const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
     await handleSubmit(fakeEvent);
   };
@@ -409,6 +458,8 @@ Please create a detailed habit plan based on this information.`;
           </div>
         )}
 
+ 
+
         {messages.map((message) => (
           <div
             key={message.id}
@@ -436,6 +487,14 @@ Please create a detailed habit plan based on this information.`;
                   ? 'bg-indigo-600 text-white'
                   : 'bg-white border border-gray-200 text-gray-800'
               }`}>
+                {/* Status Display - Similar to CopilotKit */}
+                {message.status && (
+                  <StatusIndicator 
+                    status={message.status.status} 
+                    message={message.status.message} 
+                  />
+                )}
+                
                 <div className="whitespace-pre-wrap">
                   {message.content}
                   {message.isStreaming && (

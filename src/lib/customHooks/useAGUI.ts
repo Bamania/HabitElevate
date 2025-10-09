@@ -1,28 +1,29 @@
 import { useState, useCallback } from 'react';
-import axios from 'axios';
-
-interface AGUIMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
 
 interface AGUIResponse {
   content: string;
-  type: 'content' | 'done' | 'error';
+  type: 'content' | 'agui_content' | 'done' | 'error' | 'status';
+  status?: 'thinking' | 'executing_tools' | 'generating_ui' | 'complete';
+  message?: string;
 }
 
 export function useAGUI() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentStatus, setCurrentStatus] = useState<{
+    status: 'thinking' | 'executing_tools' | 'generating_ui' | 'complete';
+    message: string;
+  } | null>(null);
 
   const sendMessage = useCallback(async (
     message: string, 
     userId?: string,
-    onChunk?: (chunk: string) => void
+    onChunk?: (chunk: string) => void,
+    onStatus?: (status: { status: string; message: string }) => void
   ): Promise<string> => {
     setIsLoading(true);
     setError(null);
+    setCurrentStatus(null);
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
@@ -67,14 +68,25 @@ export function useAGUI() {
             try {
               const data: AGUIResponse = JSON.parse(line.slice(6));
               
-              if (data.type === 'content') {
+              if (data.type === 'content' || data.type === 'agui_content') {
                 accumulatedContent += data.content;
                 // Call the chunk callback for real-time updates
                 if (onChunk) {
                   onChunk(data.content);
                 }
+              } else if (data.type === 'status') {
+                // Handle status updates
+                const statusInfo = {
+                  status: data.status || 'thinking',
+                  message: data.message || 'Processing...'
+                };
+                setCurrentStatus(statusInfo);
+                if (onStatus) {
+                  onStatus(statusInfo);
+                }
               } else if (data.type === 'done') {
                 console.log('✅ AGUI stream completed');
+                setCurrentStatus({ status: 'complete', message: 'Complete' });
                 break;
               } else if (data.type === 'error') {
                 throw new Error(data.content || 'Unknown error');
@@ -148,7 +160,7 @@ export function useAGUI() {
             if (line.startsWith('data: ')) {
               try {
                 const data: AGUIResponse = JSON.parse(line.slice(6));
-                if (data.type === 'content') {
+                if (data.type === 'content' || data.type === 'agui_content') {
                   fullResponse += data.content;
                 } else if (data.type === 'done') {
                   return fullResponse;
@@ -184,6 +196,7 @@ export function useAGUI() {
     sendMessageSimple,
     isLoading,
     error,
+    currentStatus,
     clearError: () => setError(null)
   };
 }

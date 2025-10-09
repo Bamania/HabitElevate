@@ -18,6 +18,7 @@
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-slot": "^1.0.2",
     "@reduxjs/toolkit": "^2.6.1",
+    "@supabase/supabase-js": "^2.74.0",
     "@types/redux": "^3.6.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
