@@ -7,11 +7,12 @@ import { createSupabaseClient } from '../../../lib/supabase/client'
 export default function AuthCallbackPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
-  const supabase = createSupabaseClient()
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        const supabase = createSupabaseClient()
+        
         // Check for error in URL params
         const params = new URLSearchParams(window.location.search)
         const errorParam = params.get('error')
@@ -34,9 +35,27 @@ export default function AuthCallbackPage() {
         }
 
         if (data.session) {
-          // Successfully authenticated, redirect to home
-          router.push('/')
-          router.refresh()
+          // Check if user has phone number in profile
+          const userId = data.session.user.id;
+          
+          const { data: profileData, error: profileError } = await supabase
+            .from('users_profile')
+            .select('phone')
+            .eq('id', userId)
+            .maybeSingle();
+          
+          // Redirect to phone setup if no phone number exists
+          // Ignore PGRST116 error (no rows) - it's expected for new users
+          if ((profileError && profileError.code !== 'PGRST116') || !profileData?.phone) {
+            console.log('No phone number found, redirecting to setup');
+            router.push('/setup-phone');
+            router.refresh();
+          } else {
+            // Phone exists, redirect to home
+            console.log('Phone number exists, redirecting to home');
+            router.push('/');
+            router.refresh();
+          }
         } else {
           // No session found, redirect to login
           setTimeout(() => router.push('/login'), 2000)
@@ -49,7 +68,7 @@ export default function AuthCallbackPage() {
     }
 
     handleCallback()
-  }, [router, supabase.auth])
+  }, [router])
 
   if (error) {
     return (

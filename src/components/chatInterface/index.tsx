@@ -1,13 +1,18 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Sparkles, Zap, Target, Brain, Eye, EyeOff, User, Calendar, Clock, Heart, TrendingUp } from 'lucide-react';
 import { useAuth } from "../../providers/AuthProvider";
+import { createSupabaseClient } from "../../lib/supabase/client";
 import { useUIState } from "../../lib/customHooks/useUIState";
 import AGUIChat from "./AGUIChat";
 
 export default function ChatInterface() {
+  const router = useRouter();
   // Get current logged-in user
   const { user, loading: authLoading } = useAuth();
+  const [checkingPhone, setCheckingPhone] = useState(true);
+  const [hasPhone, setHasPhone] = useState(false);
   
   // Use UI state from Redux store for context sidebar only
   const {
@@ -16,6 +21,43 @@ export default function ChatInterface() {
     toggleContext,
     setShowSuggestions,
   } = useUIState();
+
+  // Check if user has phone number
+  useEffect(() => {
+    const checkPhoneNumber = async () => {
+      if (!user?.id) {
+        setCheckingPhone(false);
+        return;
+      }
+
+      try {
+        const supabase = createSupabaseClient();
+        
+        const { data, error } = await supabase
+          .from('users_profile')
+          .select('phone')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        // Ignore PGRST116 error (no rows) - redirect to setup
+        if ((error && error.code !== 'PGRST116') || !data?.phone) {
+          // No phone number, redirect to setup
+          router.push('/setup-phone');
+          return;
+        }
+
+        setHasPhone(true);
+        setCheckingPhone(false);
+      } catch (err) {
+        console.error('Error checking phone:', err);
+        setCheckingPhone(false);
+      }
+    };
+
+    if (!authLoading) {
+      checkPhoneNumber();
+    }
+  }, [user?.id, authLoading, router]);
 
   const [userContext, setUserContext] = useState({
     name: "Alex",
@@ -52,8 +94,8 @@ export default function ChatInterface() {
     }
   };
 
-  // Show loading while checking authentication
-  if (authLoading) {
+  // Show loading while checking authentication or phone
+  if (authLoading || checkingPhone) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
@@ -78,6 +120,18 @@ export default function ChatInterface() {
           >
             Go to Login
           </a>
+        </div>
+      </div>
+    );
+  }
+
+  // If no phone number, user will be redirected by useEffect
+  if (!hasPhone) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Redirecting to phone setup...</p>
         </div>
       </div>
     );
