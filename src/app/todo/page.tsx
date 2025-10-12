@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { useAuth } from '../../providers/AuthProvider'
 import { RootState } from '../../lib/store'
 import { 
   fetchTodos, 
@@ -21,15 +22,18 @@ import { Plus, Trash2, Edit3, Check, X } from 'lucide-react'
 
 export default function TodoPage() {
   const dispatch = useDispatch()
+  const { user, loading: authLoading } = useAuth()
   const { todos, filter, loading, error } = useSelector((state: RootState) => state.todos)
   const [newTodo, setNewTodo] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
 
-  // Fetch todos on component mount
-  // useEffect(() => {
-  //   dispatch(fetchTodos(user_id) as any)
-  // }, [dispatch])
+  // Fetch todos on component mount when user is available
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchTodos(user.id) as any)
+    }
+  }, [dispatch, user?.id])
 
   // Clear error after 5 seconds
   useEffect(() => {
@@ -48,8 +52,8 @@ export default function TodoPage() {
   })
 
   const handleAddTodo = async () => {
-    if (newTodo.trim()) {
-      dispatch(addTodoAsync(newTodo.trim()) as any)
+    if (newTodo.trim() && user?.id) {
+      dispatch(addTodoAsync({ text: newTodo.trim(), userId: user.id }) as any)
       setNewTodo('')
     }
   }
@@ -80,14 +84,39 @@ export default function TodoPage() {
     dispatch(deleteTodoAsync(id) as any)
   }
 
-  // const handleClearCompleted = () => {
-  //   dispatch(clearCompletedAsync(user_id) as any)
-  // }
+  const handleClearCompleted = () => {
+    if (user?.id) {
+      dispatch(clearCompletedAsync(user.id) as any)
+    }
+  }
 
 
 
   const completedCount = todos.filter(todo => todo.completed).length
   const activeCount = todos.filter(todo => !todo.completed).length
+
+  // Show loading state while authenticating
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800 mx-auto"></div>
+          <p className="text-gray-500 mt-4">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show message if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 text-lg">Please log in to view your todos</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -247,16 +276,17 @@ export default function TodoPage() {
                 <span>{activeCount} active</span>
                 <span>{completedCount} completed</span>
               </div>
-              {/* {completedCount > 0 && (
+              {completedCount > 0 && (
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={handleClearCompleted}
                   className="text-gray-400 hover:text-red-500 text-sm"
+                  disabled={!user?.id}
                 >
                   Clear completed
                 </Button>
-              )} */}
+              )}
             </div>
           </div>
         )}

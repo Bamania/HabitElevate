@@ -33,7 +33,10 @@ const convertApiTodo = (apiTodo: ApiTodo): Todo => ({
 // Async thunks for API calls
 export const fetchTodos = createAsyncThunk(
   'todos/fetchTodos',
-  async (userId?: string) => {
+  async (userId: string) => {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
     const apiTodos = await todoApiService.getTodos(userId)
     return apiTodos.map(convertApiTodo)
   }
@@ -41,8 +44,11 @@ export const fetchTodos = createAsyncThunk(
 
 export const addTodoAsync = createAsyncThunk(
   'todos/addTodo',
-  async (text: string) => {
-    const apiTodo = await todoApiService.createTodo({ text })
+  async ({ text, userId }: { text: string; userId: string }) => {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
+    const apiTodo = await todoApiService.createTodo({ text, user_id: userId })
     return convertApiTodo(apiTodo)
   }
 )
@@ -73,7 +79,10 @@ export const deleteTodoAsync = createAsyncThunk(
 
 export const clearCompletedAsync = createAsyncThunk(
   'todos/clearCompleted',
-  async (userId?: string) => {
+  async (userId: string) => {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
     await todoApiService.clearCompletedTodos(userId)
     return userId
   }

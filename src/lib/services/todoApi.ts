@@ -30,6 +30,10 @@ class TodoApiService {
   // Create a new todo
   async createTodo(todo: CreateTodoRequest): Promise<Todo> {
     try {
+      // Ensure user_id is included
+      if (!todo.user_id) {
+        throw new Error('User ID is required to create a todo')
+      }
       const response = await axios.post<ApiResponse<Todo>>(API_BASE_URL, todo)
       if (response.data.status === 'success' && response.data.data) {
         return response.data.data

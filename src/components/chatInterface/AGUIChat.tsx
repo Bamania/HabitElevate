@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "re
 import { Send, Bot, User, Sparkles, FileText } from 'lucide-react';
 import { useAGUI } from "../../lib/customHooks/useAGUI";
 import HabitPlanForm from "./HabitPlanForm";
+import AgentOrderForm from "./AgentOrderForm";
 import { GenerativeUIRenderer } from "./GenerativeUIComponents";
 import StatusIndicator from "./StatusIndicator";
 import { useCopilotAction } from "@copilotkit/react-core"; 
@@ -32,6 +33,7 @@ interface AGUIChatProps {
 
 interface AGUIChatRef {
   sendMessage: (message: string) => void;
+  showOrderForm: () => void;
 }
 
 const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_user", className = "", onSuggestionClick }, ref) => {
@@ -420,6 +422,110 @@ Please create a detailed habit plan based on this information.`;
     setShowingFormId(null);
   };
 
+  const handleOrderFormSubmit = async (formData: any, formMessageId: string) => {
+    // Create a summary message from the order form data
+    const orderSummary = `I've created a new order for the agent:
+
+**Task:** ${formData.taskName}
+**Category:** ${formData.category}
+**Priority:** ${formData.priority}
+**Deadline:** ${formData.deadline || 'Not specified'}
+**Estimated Duration:** ${formData.estimatedDuration} minutes
+**Description:** ${formData.description}
+${formData.context ? `**Additional Context:** ${formData.context}` : ''}
+${formData.requirements.length > 0 ? `\n**Requirements:**\n${formData.requirements.map((r: string) => `- ${r}`).join('\n')}` : ''}
+${formData.deliverables.length > 0 ? `\n**Deliverables:**\n${formData.deliverables.map((d: string) => `- ${d}`).join('\n')}` : ''}
+
+Please acknowledge this order and let me know the next steps.`;
+
+    // Replace the form message with the summary
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === formMessageId 
+          ? { ...msg, content: orderSummary, formData: { ...formData, isOrderForm: false } }
+          : msg
+      )
+    );
+
+    // Send to AI for processing
+    const aiMessageId = (Date.now() + 1).toString();
+    const aiMessage: Message = {
+      id: aiMessageId,
+      content: '',
+      type: 'ai',
+      timestamp: new Date(),
+      isStreaming: true
+    };
+
+    setMessages(prev => [...prev, aiMessage]);
+    setStreamingMessageId(aiMessageId);
+
+    let accumulatedContent = '';
+
+    try {
+      await sendMessage(
+        orderSummary,
+        userId,
+        (chunk: string) => {
+          accumulatedContent += chunk;
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === aiMessageId 
+                ? { ...msg, content: accumulatedContent, isStreaming: true }
+                : msg
+            )
+          );
+        },
+        (status: { status: string; message: string }) => {
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === aiMessageId 
+                ? { 
+                    ...msg, 
+                    status: {
+                      status: status.status as 'thinking' | 'executing_tools' | 'generating_ui' | 'complete',
+                      message: status.message
+                    }
+                  }
+                : msg
+            )
+          );
+        }
+      );
+
+      setMessages(prev => 
+        prev.map(msg => {
+          if (msg.id === aiMessageId) {
+            const generativeUI = parseGenerativeUI(accumulatedContent);
+            return { 
+              ...msg, 
+              isStreaming: false,
+              generativeUI
+            };
+          }
+          return msg;
+        })
+      );
+
+    } catch (error) {
+      console.error('Error sending order:', error);
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === aiMessageId 
+            ? { ...msg, content: "Sorry, I encountered an error processing your order. Please try again.", isStreaming: false }
+            : msg
+        )
+      );
+    } finally {
+      setStreamingMessageId(null);
+    }
+  };
+
+  const handleOrderFormCancel = (formMessageId: string) => {
+    // Remove the form message
+    setMessages(prev => prev.filter(msg => msg.id !== formMessageId));
+  };
+
   // Method to send message externally (for suggestions)
   const sendExternalMessage = async (message: string) => {
     setPrompt(message);
@@ -428,9 +534,25 @@ Please create a detailed habit plan based on this information.`;
     await handleSubmit(fakeEvent);
   };
 
+  // Method to show order form
+  const showOrderForm = () => {
+    // Create a special message that contains the order form
+    const formMessage: Message = {
+      id: Date.now().toString(),
+      content: 'ORDER_FORM', // Special marker
+      type: 'user',
+      timestamp: new Date(),
+      hasForm: false,
+      formData: { isOrderForm: true } // Mark this as an order form message
+    };
+    
+    setMessages(prev => [...prev, formMessage]);
+  };
+
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
-    sendMessage: sendExternalMessage
+    sendMessage: sendExternalMessage,
+    showOrderForm: showOrderForm
   }));
 
   return (
@@ -495,34 +617,46 @@ Please create a detailed habit plan based on this information.`;
                   />
                 )}
                 
-                <div className="whitespace-pre-wrap">
-                  {message.content}
-                  {message.isStreaming && (
-                    <span className="inline-block w-2 h-4 bg-gray-400 ml-1 animate-pulse"></span>
-                  )}
-                </div>
-                
-                {/* Show generative UI component if available */}
-                {message.generativeUI && message.type === 'ai' && !message.isStreaming && (
-                  <div className="mt-3">
-                    <GenerativeUIRenderer 
-                      type={message.generativeUI.type} 
-                      data={message.generativeUI.data} 
+                {/* Render Order Form Inline if this message contains it */}
+                {message.formData?.isOrderForm ? (
+                  <div className="my-2">
+                    <AgentOrderForm
+                      onSubmit={(formData) => handleOrderFormSubmit(formData, message.id)}
+                      onCancel={() => handleOrderFormCancel(message.id)}
                     />
                   </div>
-                )}
-                
-                {/* Show form button if this message should have a form */}
-                {message.hasForm && message.type === 'ai' && !message.isStreaming && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <button
-                      onClick={() => setShowingFormId(message.id)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
-                    >
-                      <FileText className="h-4 w-4" />
-                      <span>Fill Out Habit Plan Form</span>
-                    </button>
-                  </div>
+                ) : (
+                  <>
+                    <div className="whitespace-pre-wrap">
+                      {message.content}
+                      {message.isStreaming && (
+                        <span className="inline-block w-2 h-4 bg-gray-400 ml-1 animate-pulse"></span>
+                      )}
+                    </div>
+                    
+                    {/* Show generative UI component if available */}
+                    {message.generativeUI && message.type === 'ai' && !message.isStreaming && (
+                      <div className="mt-3">
+                        <GenerativeUIRenderer 
+                          type={message.generativeUI.type} 
+                          data={message.generativeUI.data} 
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Show form button if this message should have a form */}
+                    {message.hasForm && message.type === 'ai' && !message.isStreaming && (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <button
+                          onClick={() => setShowingFormId(message.id)}
+                          className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                        >
+                          <FileText className="h-4 w-4" />
+                          <span>Fill Out Habit Plan Form</span>
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
                 
                 <div className={`text-xs mt-2 ${

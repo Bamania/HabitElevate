@@ -53,6 +53,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase.auth])
 
   const signOut = async () => {
+    try {
+      // Attempt server-side revocation of refresh tokens for stronger logout semantics
+      const accessToken = session?.access_token
+      if (accessToken) {
+        await fetch('/api/auth/signout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: accessToken }),
+        })
+      }
+    } catch (err) {
+      console.error('server signout failed', err)
+    }
+
     await supabase.auth.signOut()
   }
 

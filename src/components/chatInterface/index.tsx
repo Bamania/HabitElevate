@@ -1,10 +1,14 @@
 "use client";
 import { useState, useRef } from "react";
 import { Sparkles, Zap, Target, Brain, Eye, EyeOff, User, Calendar, Clock, Heart, TrendingUp } from 'lucide-react';
+import { useAuth } from "../../providers/AuthProvider";
 import { useUIState } from "../../lib/customHooks/useUIState";
 import AGUIChat from "./AGUIChat";
 
 export default function ChatInterface() {
+  // Get current logged-in user
+  const { user, loading: authLoading } = useAuth();
+  
   // Use UI state from Redux store for context sidebar only
   const {
     showContext,
@@ -48,6 +52,37 @@ export default function ChatInterface() {
     }
   };
 
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <Sparkles className="h-16 w-16 text-indigo-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">Welcome to HabitElevate</h2>
+          <p className="text-gray-600 mb-6">Please log in to start chatting with your AI habit coach</p>
+          <a 
+            href="/login" 
+            className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Go to Login
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col">
       <div className="relative z-10 w-full max-w-6xl mx-auto flex-1 flex flex-col">
@@ -66,7 +101,7 @@ export default function ChatInterface() {
             Build amazing habits with interactive planning forms and personalized AI guidance
           </p>
           
-          <div className="mt-4 flex items-center justify-center space-x-2">
+          <div className="mt-4 flex items-center justify-center space-x-2 flex-wrap">
             <div className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
               ✨ AGUI Powered
             </div>
@@ -80,12 +115,23 @@ export default function ChatInterface() {
               <Brain className="h-3 w-3" />
               <span>{showContext ? 'Hide' : 'Show'} Context</span>
             </button>
+            <button
+              onClick={() => {
+                if (aguiChatRef.current?.showOrderForm) {
+                  aguiChatRef.current.showOrderForm();
+                }
+              }}
+              className="flex items-center space-x-2 px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              <Target className="h-3 w-3" />
+              <span>Add Orders for Your Agent</span>
+            </button>
           </div>
         </div>
 
         {/* Main AGUI Chat Interface */}
         <div className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          <AGUIChat ref={aguiChatRef} userId="Alex" className="h-full" />
+          <AGUIChat ref={aguiChatRef} userId={user.id} className="h-full" />
         </div>
 
         {/* Quick Start Suggestions */}
