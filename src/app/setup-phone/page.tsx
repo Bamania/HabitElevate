@@ -6,7 +6,7 @@ import { useAuth } from '../../providers/AuthProvider';
 import { createSupabaseClient } from '../../lib/supabase/client';
 import { Phone, ArrowRight, Loader2 } from 'lucide-react';
 
-export default function PhoneSetupPage() {
+export default function PhoneSetupPage() {      
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -126,32 +126,47 @@ export default function PhoneSetupPage() {
         cleanedPhone = '+1' + cleanedPhone;
       }
       
-      console.log('Attempting to upsert user profile:', {
+      console.log('Attempting to update user profile:', {
         id: user.id,
-        phone: cleanedPhone,
-        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
+        phone: cleanedPhone
       });
       
-      // Upsert user profile with phone number and required fields
-      const { data, error: upsertError } = await supabase
+      // Try to update first (most common case)
+      const { data: updateData, error: updateError } = await supabase
         .from('users_profile')
-        .upsert({
-          id: user.id,
+        .update({
           phone: cleanedPhone,
-          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-          currenthabits: '',  // Provide default empty string for NOT NULL column
           updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'id'
         })
+        .eq('id', user.id)
         .select();
-
-      if (upsertError) {
-        console.error('Upsert error:', upsertError);
-        throw upsertError;
+      
+      // If update affected no rows, the profile doesn't exist yet - insert it
+      if (updateData && updateData.length === 0) {
+        console.log('Profile does not exist, creating new profile');
+        const { data: insertData, error: insertError } = await supabase
+          .from('users_profile')
+          .insert({
+            id: user.id,
+            phone: cleanedPhone,
+            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+            currenthabits: '',  // Provide default empty string for NOT NULL column
+            updated_at: new Date().toISOString()
+          })
+          .select();
+        
+        if (insertError) {
+          console.error('Insert error:', insertError);
+          throw insertError;
+        }
+        
+        console.log('Profile created successfully:', insertData);
+      } else if (updateError) {
+        console.error('Update error:', updateError);
+        throw updateError;
+      } else {
+        console.log('Profile updated successfully:', updateData);
       }
-
-      console.log('Upsert successful:', data);
       
       // Success! Redirect to home
       console.log('Phone number saved successfully:', cleanedPhone);

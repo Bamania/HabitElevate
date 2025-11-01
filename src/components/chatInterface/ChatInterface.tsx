@@ -21,7 +21,7 @@ interface AGUIChatRef {
   sendMessage: (message: string) => void;
 }
 
-const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_user", className = "", onSuggestionClick }, ref) => {
+const ChatInterface = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_user", className = "", onSuggestionClick }, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [prompt, setPrompt] = useState("");
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
@@ -252,6 +252,6 @@ const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_use
   );
 });
 
-AGUIChat.displayName = 'AGUIChat';
+ChatInterface.displayName = 'ChatInterface';
 
-export default AGUIChat;
+export default ChatInterface;

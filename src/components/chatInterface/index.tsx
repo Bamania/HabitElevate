@@ -5,7 +5,8 @@ import { Sparkles, Zap, Target, Brain, Eye, EyeOff, User, Calendar, Clock, Heart
 import { useAuth } from "../../providers/AuthProvider";
 import { createSupabaseClient } from "../../lib/supabase/client";
 import { useUIState } from "../../lib/customHooks/useUIState";
-import AGUIChat from "./AGUIChat";
+import AGUIChatInterface from "./ChatInterface";
+import ReminderForm from "../ReminderForm/index";
 
 export default function ChatInterface() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function ChatInterface() {
   const [checkingPhone, setCheckingPhone] = useState(true);
   const [hasPhone, setHasPhone] = useState(false);
   
+  const [showReminderForm, setShowReminderForm] = useState(false);
+
   // Use UI state from Redux store for context sidebar only
   const {
     showContext,
@@ -21,6 +24,10 @@ export default function ChatInterface() {
     toggleContext,
     setShowSuggestions,
   } = useUIState();
+
+  const toggleReminderForm = () => {
+    setShowReminderForm(prev => !prev);
+  };
 
   // Check if user has phone number
   useEffect(() => {
@@ -302,22 +309,18 @@ export default function ChatInterface() {
               <span>{showContext ? 'Hide' : 'Show'} Context</span>
             </button>
             <button
-              onClick={() => {
-                if (aguiChatRef.current?.showOrderForm) {
-                  aguiChatRef.current.showOrderForm();
-                }
-              }}
+              onClick={toggleReminderForm}
               className="flex items-center space-x-2 px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
             >
-              <Target className="h-3 w-3" />
-              <span>Add Orders for Your Agent</span>
+              <Clock className="h-3 w-3" />
+              <span>Set Reminder</span>
             </button>
           </div>
         </div>
 
         {/* Main AGUI Chat Interface */}
         <div className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          <AGUIChat ref={aguiChatRef} userId={user.id} className="h-full" />
+          <AGUIChatInterface ref={aguiChatRef} userId={user.id} className="h-full" />
         </div>
 
         {/* Quick Start Suggestions */}
@@ -389,6 +392,7 @@ export default function ChatInterface() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-800">{userContext.name}</h3>
+                        <h3 className="font-semibold text-gray-800">{userContext.phone}</h3>
                         {userContext.occupation && <p className="text-sm text-gray-600">{userContext.occupation}</p>}
                       </div>
                     </div>
@@ -583,6 +587,27 @@ export default function ChatInterface() {
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reminder Form Sidebar */}
+      {showReminderForm && (
+        <div className="fixed inset-y-0 right-0 w-80 bg-white/95 backdrop-blur-xl border-l border-gray-200 shadow-2xl z-50 overflow-y-auto">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-6 w-6 text-indigo-600" />
+                <h2 className="text-xl font-bold text-gray-800">Set Reminder</h2>
+              </div>
+              <button
+                onClick={toggleReminderForm}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <EyeOff className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            <ReminderForm />
           </div>
         </div>
       )}
