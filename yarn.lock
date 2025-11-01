@@ -14,21 +14,6 @@
   dependencies:
     "@ag-ui/client" "0.0.35"
 
-"@ag-ui/client@^0.0.37":
-  version "0.0.37"
-  resolved "https://registry.npmjs.org/@ag-ui/client/-/client-0.0.37.tgz"
-  integrity sha512-APEp+AYz9KuXW4zfAJSeTXizPpye+uOgLBODJyVmtB+eDCdFuesyGwJ5wkpSopb9zWnzpKumpYufCUSYmBXt0w==
-  dependencies:
-    "@ag-ui/core" "0.0.37"
-    "@ag-ui/encoder" "0.0.37"
-    "@ag-ui/proto" "0.0.37"
-    "@types/uuid" "^10.0.0"
-    fast-json-patch "^3.1.1"
-    rxjs "7.8.1"
-    untruncate-json "^0.0.1"
-    uuid "^11.1.0"
-    zod "^3.22.4"
-
 "@ag-ui/client@0.0.35":
   version "0.0.35"
   resolved "https://registry.npmjs.org/@ag-ui/client/-/client-0.0.35.tgz"
@@ -44,7 +29,7 @@
     uuid "^11.1.0"
     zod "^3.22.4"
 
-"@ag-ui/core@^0.0.37", "@ag-ui/core@0.0.37":
+"@ag-ui/core@^0.0.37":
   version "0.0.37"
   resolved "https://registry.npmjs.org/@ag-ui/core/-/core-0.0.37.tgz"
   integrity sha512-7bmjPn1Ol0Zo00F+MrPr0eOwH4AFZbhmq/ZMhCsrMILtVYBiBLcLU9QFBpBL3Zm9MCHha8b79N7JE2FzwcMaVA==
@@ -60,14 +45,6 @@
     rxjs "7.8.1"
     zod "^3.22.4"
 
-"@ag-ui/encoder@^0.0.37", "@ag-ui/encoder@0.0.37":
-  version "0.0.37"
-  resolved "https://registry.npmjs.org/@ag-ui/encoder/-/encoder-0.0.37.tgz"
-  integrity sha512-KD5t0ll3n1pn1ZX1xwQ1YxYZrtJjIttLEsUpj8mQgfh8+ZQ1ZSvlPSciKOQkHf7+Sw9eS6kHVDd5nOOLV1N1xw==
-  dependencies:
-    "@ag-ui/core" "0.0.37"
-    "@ag-ui/proto" "0.0.37"
-
 "@ag-ui/encoder@0.0.35":
   version "0.0.35"
   resolved "https://registry.npmjs.org/@ag-ui/encoder/-/encoder-0.0.35.tgz"
@@ -75,25 +52,6 @@
   dependencies:
     "@ag-ui/core" "0.0.35"
     "@ag-ui/proto" "0.0.35"
-
-"@ag-ui/langgraph@^0.0.12":
-  version "0.0.12"
-  resolved "https://registry.npmjs.org/@ag-ui/langgraph/-/langgraph-0.0.12.tgz"
-  integrity sha512-2j7IqIUYh0WAdvCXH65hd5aSHi23EOKVo78BauXa2vZI8Pricpkq9Adr2coZB2cwCbTV37lMn5yVlpDV0iQvOA==
-  dependencies:
-    "@langchain/core" "^0.3.66"
-    "@langchain/langgraph-sdk" "^0.0.105"
-    partial-json "^0.1.7"
-    rxjs "7.8.1"
-
-"@ag-ui/proto@^0.0.37", "@ag-ui/proto@0.0.37":
-  version "0.0.37"
-  resolved "https://registry.npmjs.org/@ag-ui/proto/-/proto-0.0.37.tgz"
-  integrity sha512-x6Mzrp2//19PW+BHSHajjrGvL8qv3BDwabvW/eCDa7SaDB4L5o1ZbklSa8JX+jt6DHdb5jnvUVq9KTEDGBtMcw==
-  dependencies:
-    "@ag-ui/core" "0.0.37"
-    "@bufbuild/protobuf" "^2.2.5"
-    "@protobuf-ts/protoc" "^2.11.1"
 
 "@ag-ui/proto@0.0.35":
   version "0.0.35"
@@ -711,25 +669,25 @@
   resolved "https://registry.npmjs.org/@cfworker/json-schema/-/json-schema-4.1.1.tgz"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@copilotkit/react-core@^1.10.4", "@copilotkit/react-core@1.10.4":
-  version "1.10.4"
-  resolved "https://registry.npmjs.org/@copilotkit/react-core/-/react-core-1.10.4.tgz"
-  integrity sha512-x2C3eeD92zcmE2GM5/z3kxuRbxBoU1VyAxJHc02Up7TFqxEKM276Azj9OSffhRWrmx5n2tQJt3RWtH2MUEcJ4Q==
+"@copilotkit/react-core@^1.10.4", "@copilotkit/react-core@1.10.6":
+  version "1.10.6"
+  resolved "https://registry.npmjs.org/@copilotkit/react-core/-/react-core-1.10.6.tgz"
+  integrity sha512-sdojpntwgOxP8lWRzaFEiWr0g2wDefjQHtve5GPPie+otseFonV88FZjSqIq5LN+q5BIwDOEhCmDjALsGjXvuQ==
   dependencies:
-    "@copilotkit/runtime-client-gql" "1.10.4"
-    "@copilotkit/shared" "1.10.4"
+    "@copilotkit/runtime-client-gql" "1.10.6"
+    "@copilotkit/shared" "1.10.6"
     "@scarf/scarf" "^1.3.0"
     react-markdown "^8.0.7"
     untruncate-json "^0.0.1"
 
 "@copilotkit/react-ui@^1.10.4":
-  version "1.10.4"
-  resolved "https://registry.npmjs.org/@copilotkit/react-ui/-/react-ui-1.10.4.tgz"
-  integrity sha512-C2dmBhndsWRPKqSnScOztTuyCBcowBZyqa4JrUyVlvVsiYVa1rEqMJTo6Gkw+tq6XEK+cJgAPcRtymght3Grxg==
+  version "1.10.6"
+  resolved "https://registry.npmjs.org/@copilotkit/react-ui/-/react-ui-1.10.6.tgz"
+  integrity sha512-eNIbZKMvBVZqlAR4fqkmZRIYIt8WhwZOxfVJVwMD9nfmWdtatmxrOLecyDiPk/hkq2o/8s2/rubaZSMK6m+GHQ==
   dependencies:
-    "@copilotkit/react-core" "1.10.4"
-    "@copilotkit/runtime-client-gql" "1.10.4"
-    "@copilotkit/shared" "1.10.4"
+    "@copilotkit/react-core" "1.10.6"
+    "@copilotkit/runtime-client-gql" "1.10.6"
+    "@copilotkit/shared" "1.10.6"
     "@headlessui/react" "^2.1.3"
     react-markdown "^10.1.0"
     react-syntax-highlighter "^15.6.1"
@@ -737,28 +695,23 @@
     remark-gfm "^4.0.1"
     remark-math "^6.0.0"
 
-"@copilotkit/runtime-client-gql@1.10.4":
-  version "1.10.4"
-  resolved "https://registry.npmjs.org/@copilotkit/runtime-client-gql/-/runtime-client-gql-1.10.4.tgz"
-  integrity sha512-wOo5gzR7EiVEBpyBYYq84o5fb0OQ1pcJ8AzPZWEDc4GaV2xLDogjd7gKrP2zw5tV4tGV5HizHpo5UiE4kHZAgw==
+"@copilotkit/runtime-client-gql@1.10.6":
+  version "1.10.6"
+  resolved "https://registry.npmjs.org/@copilotkit/runtime-client-gql/-/runtime-client-gql-1.10.6.tgz"
+  integrity sha512-oLX8mjppVvQCWfquW9A0500hYVNxM4X/mtt76SEvfGUb2KsNQ4j2HOCzpmtm85MeLproC+f9738wLwRueLliZg==
   dependencies:
-    "@copilotkit/shared" "1.10.4"
+    "@copilotkit/shared" "1.10.6"
     "@urql/core" "^5.0.3"
     untruncate-json "^0.0.1"
     urql "^4.1.0"
 
 "@copilotkit/runtime@^1.10.4":
-  version "1.10.4"
-  resolved "https://registry.npmjs.org/@copilotkit/runtime/-/runtime-1.10.4.tgz"
-  integrity sha512-/KuKjISiQYoV6T8rE1khzTKO5Abctl/Flh50kIvyGAjwDSKyOTWJ/XEn8zAGP8/xo5KzSQQYaODFoz3oncGN6g==
+  version "1.10.6"
+  resolved "https://registry.npmjs.org/@copilotkit/runtime/-/runtime-1.10.6.tgz"
+  integrity sha512-35MdJ6nutC+spgHRJURbanLxBoQCNvVBYD0CBIk4Rv3/Ck8XgZA4lcc+5aGteuERXOPBsYEQjGD4xEPy3QXmGg==
   dependencies:
-    "@ag-ui/client" "^0.0.37"
-    "@ag-ui/core" "^0.0.37"
-    "@ag-ui/encoder" "^0.0.37"
-    "@ag-ui/langgraph" "^0.0.12"
-    "@ag-ui/proto" "^0.0.37"
     "@anthropic-ai/sdk" "^0.57.0"
-    "@copilotkit/shared" "1.10.4"
+    "@copilotkit/shared" "1.10.6"
     "@graphql-yoga/plugin-defer-stream" "^3.3.1"
     "@langchain/aws" "^0.1.9"
     "@langchain/community" "^0.3.29"
@@ -784,10 +737,10 @@
     type-graphql "2.0.0-rc.1"
     zod "^3.23.3"
 
-"@copilotkit/shared@1.10.4":
-  version "1.10.4"
-  resolved "https://registry.npmjs.org/@copilotkit/shared/-/shared-1.10.4.tgz"
-  integrity sha512-vvF3vG03e5OZcUd0x7FdpIPRx60W3vyiK+0maGyEZoU1xUlBJbxaCkAED6gAH3JBZl/BZNWoJKsYDxiQUY2V3A==
+"@copilotkit/shared@1.10.6":
+  version "1.10.6"
+  resolved "https://registry.npmjs.org/@copilotkit/shared/-/shared-1.10.6.tgz"
+  integrity sha512-56Rltf4fDBqCpl1ZXARypt5NdE4LTg3tGPPLurZpgPmm31Lv5EAHpfjC7I55vt9A0mXWlTCHtCrpiaAlTyzGJw==
   dependencies:
     "@ag-ui/core" "^0.0.37"
     "@segment/analytics-node" "^2.1.2"
@@ -1488,10 +1441,10 @@
     uuid "^10.0.0"
     zod "^3.25.32"
 
-"@langchain/core@^0.3.38", "@langchain/core@^0.3.66":
-  version "0.3.76"
-  resolved "https://registry.npmjs.org/@langchain/core/-/core-0.3.76.tgz"
-  integrity sha512-jYQ9Djbmp/iQNzZOtXc+/WACsBKV2Bha83+p7TddN+aC7Sb7jTRENoNWypnIFCd5EaEn1XVQazuXlaWZoxkA+A==
+"@langchain/core@^0.3.38":
+  version "0.3.79"
+  resolved "https://registry.npmjs.org/@langchain/core/-/core-0.3.79.tgz"
+  integrity sha512-ZLAs5YMM5N2UXN3kExMglltJrKKoW7hs3KMZFlXUnD7a5DFKBYxPFMeXA4rT+uvTxuJRZPCYX0JKI5BhyAWx4A==
   dependencies:
     "@cfworker/json-schema" "^4.0.2"
     ansi-styles "^5.0.0"
@@ -1521,16 +1474,6 @@
   dependencies:
     "@langchain/google-common" "~0.1.8"
     google-auth-library "^8.9.0"
-
-"@langchain/langgraph-sdk@^0.0.105":
-  version "0.0.105"
-  resolved "https://registry.npmjs.org/@langchain/langgraph-sdk/-/langgraph-sdk-0.0.105.tgz"
-  integrity sha512-3DD1W1wnbP48807qq+5gY248mFcwwNGqKdmZt05P3zeLpfP5Sfm6ELzVvqHGpr+qumP0yGRZs/7qArYGXRRfcQ==
-  dependencies:
-    "@types/json-schema" "^7.0.15"
-    p-queue "^6.6.2"
-    p-retry "4"
-    uuid "^9.0.0"
 
 "@langchain/langgraph-sdk@^0.0.70":
   version "0.0.70"
@@ -1626,11 +1569,6 @@
   version "0.11.0"
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
-
-"@protobuf-ts/protoc@^2.11.1":
-  version "2.11.1"
-  resolved "https://registry.npmjs.org/@protobuf-ts/protoc/-/protoc-2.11.1.tgz"
-  integrity sha512-mUZJaV0daGO6HUX90o/atzQ6A7bbN2RSuHtdwo8SSF2Qoe3zHwa4IHyCN1evftTeHfLmdz+45qo47sL+5P8nyg==
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
