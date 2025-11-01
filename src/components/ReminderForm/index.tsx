@@ -50,7 +50,8 @@ const ReminderForm = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post("http://localhost:8000/schedule-call", {
+            const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+            const response = await axios.post(`${apiUrl}/schedule-call`, {
                 phone_number: phoneNumber,
                 schedule_time: datetime,
                 user_id: user?.id,
