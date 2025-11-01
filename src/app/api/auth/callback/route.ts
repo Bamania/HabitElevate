@@ -20,14 +20,28 @@ export async function GET(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
     
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     
     if (exchangeError) {
       console.error('Error exchanging code for session:', exchangeError)
       return NextResponse.redirect(new URL('/login?error=Authentication failed', requestUrl.origin))
     }
+
+    // Check if user has completed onboarding
+    if (data?.session?.user?.id) {
+      const { data: profileData, error: profileError } = await supabase
+        .from('users_profile')
+        .select('phone, primary_goal, plan_generated_at')
+        .eq('id', data.session.user.id)
+        .maybeSingle();
+
+      // If profile doesn't exist or onboarding incomplete, redirect to onboarding
+      if (!profileData?.phone || !profileData?.primary_goal || !profileData?.plan_generated_at) {
+        return NextResponse.redirect(new URL('/onboarding', requestUrl.origin))
+      }
+    }
   }
 
-  // URL to redirect to after sign in process completes
+  // URL to redirect to after sign in process completes (for completed users)
   return NextResponse.redirect(new URL('/', requestUrl.origin))
 }

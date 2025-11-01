@@ -84,7 +84,8 @@ export default function SignUpPage() {
           return
         }
         
-        router.push('/')
+        // Redirect to onboarding instead of home
+        router.push('/onboarding')
         router.refresh()
       }
     } catch (error) {

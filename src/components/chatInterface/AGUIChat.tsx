@@ -1,11 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-import { Send, Bot, User, Sparkles, FileText } from 'lucide-react';
+import { Send, Bot, User, Sparkles } from 'lucide-react';
 import { useAGUI } from "../../lib/customHooks/useAGUI";
-import HabitPlanForm from "./HabitPlanForm";
-import AgentOrderForm from "./AgentOrderForm";
-import { GenerativeUIRenderer } from "./GenerativeUIComponents";
-import StatusIndicator from "./StatusIndicator";
 import { useCopilotAction } from "@copilotkit/react-core"; 
 interface Message {
   id: string;
@@ -13,16 +9,6 @@ interface Message {
   type: 'user' | 'ai';
   timestamp: Date;
   isStreaming?: boolean;
-  hasForm?: boolean;
-  formData?: any;
-  generativeUI?: {
-    type: string;
-    data: any;
-  };
-  status?: {
-    status: 'thinking' | 'executing_tools' | 'generating_ui' | 'complete';
-    message: string;
-  };
 }
 
 interface AGUIChatProps {
@@ -33,164 +19,15 @@ interface AGUIChatProps {
 
 interface AGUIChatRef {
   sendMessage: (message: string) => void;
-  showOrderForm: () => void;
 }
 
 const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_user", className = "", onSuggestionClick }, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [prompt, setPrompt] = useState("");
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
-  const [showingFormId, setShowingFormId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { sendMessage, isLoading, error, currentStatus } = useAGUI();
-
-  // Function to detect if response should trigger a form
-  const shouldShowForm = (content: string): boolean => {
-    const formTriggers = [
-      'build a plan',
-      'create a plan', 
-      'habit plan',
-      'planning form',
-      'fill out',
-      'form to complete',
-      'build your habit'
-    ];
-    
-    return formTriggers.some(trigger => 
-      content.toLowerCase().includes(trigger.toLowerCase())
-    );
-  };
-
-  // Function to detect and parse generative UI components
-  const parseGenerativeUI = (content: string): { type: string; data: any } | null => {
-    // Look for JSON blocks that contain generative UI data
-    const uiBlockRegex = /```ui-(\w+)\n([\s\S]*?)\n```/;
-    const match = content.match(uiBlockRegex);
-    
-    if (match) {
-      const [, type, jsonData] = match;
-      try {
-        const data = JSON.parse(jsonData);
-        return { type, data };
-      } catch (e) {
-        console.error('Error parsing generative UI data:', e);
-      }
-    }
-
-    // Alternative: Look for specific UI trigger phrases and generate sample data
-    const lowerContent = content.toLowerCase();
-    
-    if (lowerContent.includes('show progress') || lowerContent.includes('track progress')) {
-      return {
-        type: 'progress',
-        data: {
-          title: 'Morning Workout Progress',
-          currentStreak: 7,
-          goal: 30,
-          progress: 23,
-          lastActivity: '2 hours ago'
-        }
-      };
-    }
-    
-    if (lowerContent.includes('schedule') || lowerContent.includes('daily routine')) {
-      return {
-        type: 'schedule',
-        data: {
-          title: "Today's Habit Schedule",
-          schedule: 'Daily • 7:00 AM',
-          nextReminder: 'Tomorrow at 7:00 AM',
-          tasks: [
-            { name: '10 minutes meditation', duration: '10 min' },
-            { name: '20 push-ups', duration: '5 min' },
-            { name: 'Journal 3 gratitudes', duration: '5 min' }
-          ]
-        }
-      };
-    }
-    
-    if (lowerContent.includes('timer') || lowerContent.includes('start session')) {
-      return {
-        type: 'timer',
-        data: {
-          title: 'Meditation Session',
-          duration: 10, // minutes
-          type: 'Mindfulness'
-        }
-      };
-    }
-    
-    if (lowerContent.includes('stats') || lowerContent.includes('analytics') || lowerContent.includes('insights')) {
-      return {
-        type: 'stats',
-        data: {
-          title: 'Weekly Habit Analytics',
-          stats: [
-            { value: '85%', label: 'Completion Rate' },
-            { value: '12', label: 'Active Habits' },
-            { value: '45', label: 'Total Days' },
-            { value: '3.2x', label: 'Improvement' }
-          ],
-          insights: [
-            'Your morning habits have 95% completion rate',
-            'Best performance on weekdays',
-            'Consider adding evening routine'
-          ]
-        }
-      };
-    }
-    
-    if (lowerContent.includes('quick actions') || lowerContent.includes('what can i do')) {
-      return {
-        type: 'actions',
-        data: {
-          title: 'Quick Actions',
-          actions: [
-            {
-              title: 'Log Habit',
-              description: 'Mark habit as done',
-              icon: 'check',
-              color: 'bg-green-100'
-            },
-            {
-              title: 'Add Habit',
-              description: 'Create new habit',
-              icon: 'plus',
-              color: 'bg-blue-100'
-            },
-            {
-              title: 'View Calendar',
-              description: 'See schedule',
-              icon: 'calendar',
-              color: 'bg-purple-100'
-            },
-            {
-              title: 'Achievements',
-              description: 'View badges',
-              icon: 'award',
-              color: 'bg-yellow-100'
-            }
-          ]
-        }
-      };
-    }
-    
-    if (lowerContent.includes('achievement') || lowerContent.includes('congratulations') || lowerContent.includes('milestone')) {
-      return {
-        type: 'achievement',
-        data: {
-          title: 'First Week Warrior',
-          description: 'Completed your first 7-day streak! Keep up the amazing work.',
-          icon: 'award',
-          rarity: 'rare',
-          unlockedAt: 'just now'
-        }
-      };
-    }
-    
-    return null;
-  };
+  const { sendMessage, isLoading, error } = useAGUI();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -252,6 +89,7 @@ const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_use
       await sendMessage(
         messageToSend,
         userId,
+    
         (chunk: string) => {
           accumulatedContent += chunk;
           setMessages(prev => 
@@ -261,44 +99,16 @@ const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_use
                 : msg
             )
           );
-        },
-        (status: { status: string; message: string }) => {
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === aiMessageId 
-                ? { 
-                    ...msg, 
-                    status: {
-                      status: status.status as 'thinking' | 'executing_tools' | 'generating_ui' | 'complete',
-                      message: status.message
-                    }
-                  }
-                : msg
-            )
-          );
         }
       );
 
-      // Mark as completed and check if we should show a form or generative UI
+      // Mark as completed
       setMessages(prev => 
-        prev.map(msg => {
-          if (msg.id === aiMessageId) {
-            const hasForm = shouldShowForm(accumulatedContent);
-            const generativeUI = parseGenerativeUI(accumulatedContent);
-            
-            if (hasForm) {
-              setShowingFormId(aiMessageId);
-            }
-            
-            return { 
-              ...msg, 
-              isStreaming: false,
-              hasForm,
-              generativeUI
-            };
-          }
-          return msg;
-        })
+        prev.map(msg => 
+          msg.id === aiMessageId 
+            ? { ...msg, isStreaming: false }
+            : msg
+        )
       );
 
     } catch (error) {
@@ -319,213 +129,6 @@ const AGUIChat = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_use
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const handleFormSubmit = async (formData: any) => {
-    // Hide the form
-    setShowingFormId(null);
-    
-    // Create a summary message from the form data
-    const formSummary = `I've filled out the habit plan form:
-    
-**Habit:** ${formData.habitName}
-**Category:** ${formData.category}
-**Frequency:** ${formData.frequency}
-**Duration:** ${formData.duration} minutes
-**Best time:** ${formData.timeOfDay}
-**Start date:** ${formData.startDate}
-**Motivation:** ${formData.motivation}
-${formData.obstacles.length > 0 ? `**Potential obstacles:** ${formData.obstacles.join(', ')}` : ''}
-${formData.rewards.length > 0 ? `**Rewards:** ${formData.rewards.join(', ')}` : ''}
-
-Please create a detailed habit plan based on this information.`;
-
-    // Add user message with form data
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: formSummary,
-      type: 'user',
-      timestamp: new Date(),
-      formData
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-
-    // Send to AI for processing
-    const aiMessageId = (Date.now() + 1).toString();
-    const aiMessage: Message = {
-      id: aiMessageId,
-      content: "",
-      type: 'ai',
-      timestamp: new Date(),
-      isStreaming: true
-    };
-
-    setMessages(prev => [...prev, aiMessage]);
-    setStreamingMessageId(aiMessageId);
-
-    try {
-      let accumulatedContent = "";
-
-      await sendMessage(
-        `Based on this habit plan form data, create a detailed and actionable habit plan: ${JSON.stringify(formData)}`,
-        userId,
-        (chunk: string) => {
-          accumulatedContent += chunk;
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === aiMessageId 
-                ? { ...msg, content: accumulatedContent, isStreaming: true }
-                : msg
-            )
-          );
-        },
-        (status: { status: string; message: string }) => {
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === aiMessageId 
-                ? { 
-                    ...msg, 
-                    status: {
-                      status: status.status as 'thinking' | 'executing_tools' | 'generating_ui' | 'complete',
-                      message: status.message
-                    }
-                  }
-                : msg
-            )
-          );
-        }
-      );
-
-      // Mark as completed
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === aiMessageId 
-            ? { ...msg, isStreaming: false }
-            : msg
-        )
-      );
-
-    } catch (error) {
-      console.error('Error processing form:', error);
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === aiMessageId 
-            ? { ...msg, content: "Sorry, I had trouble processing your form. Please try again.", isStreaming: false }
-            : msg
-        )
-      );
-    } finally {
-      setStreamingMessageId(null);
-    }
-  };
-
-  const handleFormCancel = () => {
-    setShowingFormId(null);
-  };
-
-  const handleOrderFormSubmit = async (formData: any, formMessageId: string) => {
-    // Create a summary message from the order form data
-    const orderSummary = `I've created a new order for the agent:
-
-**Task:** ${formData.taskName}
-**Category:** ${formData.category}
-**Priority:** ${formData.priority}
-**Deadline:** ${formData.deadline || 'Not specified'}
-**Estimated Duration:** ${formData.estimatedDuration} minutes
-**Description:** ${formData.description}
-${formData.context ? `**Additional Context:** ${formData.context}` : ''}
-${formData.requirements.length > 0 ? `\n**Requirements:**\n${formData.requirements.map((r: string) => `- ${r}`).join('\n')}` : ''}
-${formData.deliverables.length > 0 ? `\n**Deliverables:**\n${formData.deliverables.map((d: string) => `- ${d}`).join('\n')}` : ''}
-
-Please acknowledge this order and let me know the next steps.`;
-
-    // Replace the form message with the summary
-    setMessages(prev => 
-      prev.map(msg => 
-        msg.id === formMessageId 
-          ? { ...msg, content: orderSummary, formData: { ...formData, isOrderForm: false } }
-          : msg
-      )
-    );
-
-    // Send to AI for processing
-    const aiMessageId = (Date.now() + 1).toString();
-    const aiMessage: Message = {
-      id: aiMessageId,
-      content: '',
-      type: 'ai',
-      timestamp: new Date(),
-      isStreaming: true
-    };
-
-    setMessages(prev => [...prev, aiMessage]);
-    setStreamingMessageId(aiMessageId);
-
-    let accumulatedContent = '';
-
-    try {
-      await sendMessage(
-        orderSummary,
-        userId,
-        (chunk: string) => {
-          accumulatedContent += chunk;
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === aiMessageId 
-                ? { ...msg, content: accumulatedContent, isStreaming: true }
-                : msg
-            )
-          );
-        },
-        (status: { status: string; message: string }) => {
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === aiMessageId 
-                ? { 
-                    ...msg, 
-                    status: {
-                      status: status.status as 'thinking' | 'executing_tools' | 'generating_ui' | 'complete',
-                      message: status.message
-                    }
-                  }
-                : msg
-            )
-          );
-        }
-      );
-
-      setMessages(prev => 
-        prev.map(msg => {
-          if (msg.id === aiMessageId) {
-            const generativeUI = parseGenerativeUI(accumulatedContent);
-            return { 
-              ...msg, 
-              isStreaming: false,
-              generativeUI
-            };
-          }
-          return msg;
-        })
-      );
-
-    } catch (error) {
-      console.error('Error sending order:', error);
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === aiMessageId 
-            ? { ...msg, content: "Sorry, I encountered an error processing your order. Please try again.", isStreaming: false }
-            : msg
-        )
-      );
-    } finally {
-      setStreamingMessageId(null);
-    }
-  };
-
-  const handleOrderFormCancel = (formMessageId: string) => {
-    // Remove the form message
-    setMessages(prev => prev.filter(msg => msg.id !== formMessageId));
-  };
-
   // Method to send message externally (for suggestions)
   const sendExternalMessage = async (message: string) => {
     setPrompt(message);
@@ -534,25 +137,9 @@ Please acknowledge this order and let me know the next steps.`;
     await handleSubmit(fakeEvent);
   };
 
-  // Method to show order form
-  const showOrderForm = () => {
-    // Create a special message that contains the order form
-    const formMessage: Message = {
-      id: Date.now().toString(),
-      content: 'ORDER_FORM', // Special marker
-      type: 'user',
-      timestamp: new Date(),
-      hasForm: false,
-      formData: { isOrderForm: true } // Mark this as an order form message
-    };
-    
-    setMessages(prev => [...prev, formMessage]);
-  };
-
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
-    sendMessage: sendExternalMessage,
-    showOrderForm: showOrderForm
+    sendMessage: sendExternalMessage
   }));
 
   return (
@@ -609,55 +196,12 @@ Please acknowledge this order and let me know the next steps.`;
                   ? 'bg-indigo-600 text-white'
                   : 'bg-white border border-gray-200 text-gray-800'
               }`}>
-                {/* Status Display - Similar to CopilotKit */}
-                {message.status && (
-                  <StatusIndicator 
-                    status={message.status.status} 
-                    message={message.status.message} 
-                  />
-                )}
-                
-                {/* Render Order Form Inline if this message contains it */}
-                {message.formData?.isOrderForm ? (
-                  <div className="my-2">
-                    <AgentOrderForm
-                      onSubmit={(formData) => handleOrderFormSubmit(formData, message.id)}
-                      onCancel={() => handleOrderFormCancel(message.id)}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <div className="whitespace-pre-wrap">
-                      {message.content}
-                      {message.isStreaming && (
-                        <span className="inline-block w-2 h-4 bg-gray-400 ml-1 animate-pulse"></span>
-                      )}
-                    </div>
-                    
-                    {/* Show generative UI component if available */}
-                    {message.generativeUI && message.type === 'ai' && !message.isStreaming && (
-                      <div className="mt-3">
-                        <GenerativeUIRenderer 
-                          type={message.generativeUI.type} 
-                          data={message.generativeUI.data} 
-                        />
-                      </div>
-                    )}
-                    
-                    {/* Show form button if this message should have a form */}
-                    {message.hasForm && message.type === 'ai' && !message.isStreaming && (
-                      <div className="mt-3 pt-3 border-t border-gray-100">
-                        <button
-                          onClick={() => setShowingFormId(message.id)}
-                          className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
-                        >
-                          <FileText className="h-4 w-4" />
-                          <span>Fill Out Habit Plan Form</span>
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
+                <div className="whitespace-pre-wrap">
+                  {message.content}
+                  {message.isStreaming && (
+                    <span className="inline-block w-2 h-4 bg-gray-400 ml-1 animate-pulse"></span>
+                  )}
+                </div>
                 
                 <div className={`text-xs mt-2 ${
                   message.type === 'user' ? 'text-indigo-200' : 'text-gray-500'
@@ -704,18 +248,6 @@ Please acknowledge this order and let me know the next steps.`;
           </button>
         </form>
       </div>
-
-      {/* Form Modal Overlay */}
-      {showingFormId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <HabitPlanForm
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 });

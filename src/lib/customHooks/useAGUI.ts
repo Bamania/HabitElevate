@@ -2,28 +2,20 @@ import { useState, useCallback } from 'react';
 
 interface AGUIResponse {
   content: string;
-  type: 'content' | 'agui_content' | 'done' | 'error' | 'status';
-  status?: 'thinking' | 'executing_tools' | 'generating_ui' | 'complete';
-  message?: string;
+  type: 'content' | 'agui_content' | 'done' | 'error';
 }
 
 export function useAGUI() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentStatus, setCurrentStatus] = useState<{
-    status: 'thinking' | 'executing_tools' | 'generating_ui' | 'complete';
-    message: string;
-  } | null>(null);
 
   const sendMessage = useCallback(async (
     message: string, 
     userId?: string,
-    onChunk?: (chunk: string) => void,
-    onStatus?: (status: { status: string; message: string }) => void
+    onChunk?: (chunk: string) => void
   ): Promise<string> => {
     setIsLoading(true);
     setError(null);
-    setCurrentStatus(null);
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
@@ -74,19 +66,8 @@ export function useAGUI() {
                 if (onChunk) {
                   onChunk(data.content);
                 }
-              } else if (data.type === 'status') {
-                // Handle status updates
-                const statusInfo = {
-                  status: data.status || 'thinking',
-                  message: data.message || 'Processing...'
-                };
-                setCurrentStatus(statusInfo);
-                if (onStatus) {
-                  onStatus(statusInfo);
-                }
               } else if (data.type === 'done') {
                 console.log('✅ AGUI stream completed');
-                setCurrentStatus({ status: 'complete', message: 'Complete' });
                 break;
               } else if (data.type === 'error') {
                 throw new Error(data.content || 'Unknown error');
@@ -196,7 +177,6 @@ export function useAGUI() {
     sendMessageSimple,
     isLoading,
     error,
-    currentStatus,
     clearError: () => setError(null)
   };
 }

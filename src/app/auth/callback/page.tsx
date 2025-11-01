@@ -35,24 +35,32 @@ export default function AuthCallbackPage() {
         }
 
         if (data.session) {
-          // Check if user has phone number in profile
+          // Check if user has completed onboarding
           const userId = data.session.user.id;
           
           const { data: profileData, error: profileError } = await supabase
             .from('users_profile')
-            .select('phone')
+            .select('phone, primary_goal, plan_generated_at')
             .eq('id', userId)
             .maybeSingle();
           
-          // Redirect to phone setup if no phone number exists
           // Ignore PGRST116 error (no rows) - it's expected for new users
-          if ((profileError && profileError.code !== 'PGRST116') || !profileData?.phone) {
-            console.log('No phone number found, redirecting to setup');
-            router.push('/setup-phone');
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error('Error fetching profile:', profileError);
+          }
+
+          // Check onboarding status
+          const hasPhone = profileData?.phone;
+          const hasCompletedOnboarding = profileData?.primary_goal && profileData?.plan_generated_at;
+
+          if (!hasPhone || !hasCompletedOnboarding) {
+            // New user or incomplete onboarding - redirect to onboarding
+            console.log('Incomplete onboarding, redirecting to onboarding page');
+            router.push('/onboarding');
             router.refresh();
           } else {
-            // Phone exists, redirect to home
-            console.log('Phone number exists, redirecting to home');
+            // Onboarding complete, redirect to home
+            console.log('Onboarding complete, redirecting to home');
             router.push('/');
             router.refresh();
           }

@@ -60,18 +60,150 @@ export default function ChatInterface() {
   }, [user?.id, authLoading, router]);
 
   const [userContext, setUserContext] = useState({
-    name: "Alex",
-    age: 28,
-    occupation: "Software Developer",
-    lifestyle: "Busy professional",
-    goals: ["Fitness", "Productivity", "Work-life balance"],
-    preferences: ["Morning routines", "Short sessions", "Tech-friendly"],
-    challenges: ["Time constraints", "Motivation", "Consistency"],
-    currentHabits: ["Coffee drinking", "Social media checking"],
-    energyLevel: "High in morning, low in evening",
-    schedule: "9-5 job, gym 3x/week",
-    personality: "Goal-oriented, tech-savvy, analytical"
+    name: "Loading...",
+    age: 0,
+    occupation: "",
+    lifestyle: "",
+    goals: [] as string[],
+    preferences: [] as string[],
+    challenges: [] as string[],
+    currentHabits: [] as string[],
+    energyLevel: "",
+    schedule: "",
+    personality: "",
+    phone: ""
   });
+
+  const [loadingContext, setLoadingContext] = useState(true);
+
+  // State for todos and habits
+  const [userTodos, setUserTodos] = useState<any[]>([]);
+  const [userHabits, setUserHabits] = useState<any[]>([]);
+
+  // Fetch user profile data from database
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id) {
+        setLoadingContext(false);
+        return;
+      }
+
+      try {
+        const supabase = createSupabaseClient();
+        
+        // Fetch user profile data
+        const { data: profileData, error: profileError } = await supabase
+          .from('users_profile')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error fetching user profile:', profileError);
+          setLoadingContext(false);
+          return;
+        }
+
+        if (profileData) {
+          // Parse arrays from JSON strings if needed
+          const parseArray = (value: any): string[] => {
+            if (!value) return [];
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string') {
+              try {
+                const parsed = JSON.parse(value);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                // If not JSON, split by comma or return as single item
+                return value.includes(',') ? value.split(',').map((s: string) => s.trim()) : [value];
+              }
+            }
+            return [];
+          };
+
+          setUserContext({
+            name: profileData.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+            age: profileData.age || 0,
+            occupation: profileData.occupation || '',
+            lifestyle: profileData.lifestyle || '',
+            goals: parseArray(profileData.goals),
+            preferences: parseArray(profileData.preferences),
+            challenges: parseArray(profileData.challenges),
+            currentHabits: parseArray(profileData.currenthabits),
+            energyLevel: profileData.energy_level || profileData.energylevel || '',
+            schedule: profileData.schedule || '',
+            personality: profileData.personality || '',
+            phone: profileData.phone || ''
+          });
+        } else {
+          // Use fallback data from user metadata
+          setUserContext({
+            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+            age: 0,
+            occupation: '',
+            lifestyle: '',
+            goals: [],
+            preferences: [],
+            challenges: [],
+            currentHabits: [],
+            energyLevel: '',
+            schedule: '',
+            personality: '',
+            phone: ''
+          });
+        }
+
+        setLoadingContext(false);
+      } catch (err) {
+        console.error('Error fetching user context:', err);
+        setLoadingContext(false);
+      }
+    };
+
+    if (!authLoading && user?.id) {
+      fetchUserProfile();
+    }
+  }, [user?.id, authLoading]);
+
+  // Fetch todos and habits from database
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user?.id) return;
+
+      try {
+        const supabase = createSupabaseClient();
+        
+        // Fetch todos from Supabase (if available)
+        const { data: todosData, error: todosError } = await supabase
+          .from('todos')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (!todosError && todosData) {
+          setUserTodos(todosData);
+        }
+
+        // Fetch habits from Supabase (if available)
+        const { data: habitsData, error: habitsError } = await supabase
+          .from('habits')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (!habitsError && habitsData) {
+          setUserHabits(habitsData);
+        }
+      } catch (err) {
+        console.error('Error fetching todos/habits:', err);
+      }
+    };
+
+    if (!authLoading && user?.id) {
+      fetchUserData();
+    }
+  }, [user?.id, authLoading]);
 
   const [suggestions] = useState([
     "I want to build a plan for a morning routine",
@@ -239,107 +371,217 @@ export default function ChatInterface() {
             </div>
 
             <div className="space-y-6">
+              {/* Loading State */}
+              {loadingContext && (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-600">Loading context...</p>
+                </div>
+              )}
+
               {/* User Profile */}
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
+              {!loadingContext && (
+                <>
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{userContext.name}</h3>
+                        {userContext.occupation && <p className="text-sm text-gray-600">{userContext.occupation}</p>}
+                      </div>
+                    </div>
+                    {userContext.lifestyle && <p className="text-sm text-gray-600">{userContext.lifestyle}</p>}
+                    {userContext.age > 0 && <p className="text-xs text-gray-500 mt-2">Age: {userContext.age}</p>}
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{userContext.name}</h3>
-                    <p className="text-sm text-gray-600">{userContext.occupation}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">{userContext.lifestyle}</p>
-              </div>
 
-              {/* Goals */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <Target className="h-4 w-4 mr-2 text-green-500" />
-                  Goals
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {userContext.goals.map((goal, index) => (
-                    <span key={index} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-                      {goal}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                  {/* Active Habits from DB */}
+                  {userHabits.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <TrendingUp className="h-4 w-4 mr-2 text-purple-500" />
+                        Active Habits ({userHabits.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {userHabits.slice(0, 5).map((habit, index) => (
+                          <div key={index} className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium text-gray-800">{habit.name}</span>
+                              <span className="text-xs text-purple-600">{habit.frequency}</span>
+                            </div>
+                            {habit.description && (
+                              <p className="text-xs text-gray-600">{habit.description}</p>
+                            )}
+                            <div className="flex items-center mt-2 space-x-2">
+                              <span className="text-xs text-gray-500">Streak: {habit.current_streak || 0}</span>
+                              {habit.longest_streak > 0 && (
+                                <span className="text-xs text-green-600">Best: {habit.longest_streak}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Preferences */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <Heart className="h-4 w-4 mr-2 text-pink-500" />
-                  Preferences
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {userContext.preferences.map((pref, index) => (
-                    <span key={index} className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm">
-                      {pref}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                  {/* Recent Todos from DB */}
+                  {userTodos.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <Target className="h-4 w-4 mr-2 text-cyan-500" />
+                        Recent Todos ({userTodos.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {userTodos.slice(0, 5).map((todo, index) => (
+                          <div key={index} className={`p-2 rounded-lg border ${todo.completed ? 'bg-gray-50 border-gray-200' : 'bg-cyan-50 border-cyan-200'}`}>
+                            <div className="flex items-start space-x-2">
+                              <input 
+                                type="checkbox" 
+                                checked={todo.completed} 
+                                readOnly
+                                className="mt-1"
+                              />
+                              <span className={`text-sm ${todo.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                                {todo.text}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Challenges */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <Zap className="h-4 w-4 mr-2 text-orange-500" />
-                  Challenges
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {userContext.challenges.map((challenge, index) => (
-                    <span key={index} className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                      {challenge}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                  {/* Goals */}
+                  {userContext.goals.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <Target className="h-4 w-4 mr-2 text-green-500" />
+                        Goals
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {userContext.goals.map((goal, index) => (
+                          <span key={index} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                            {goal}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Current Habits */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
-                  Current Habits
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {userContext.currentHabits.map((habit, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                      {habit}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                  {/* Preferences */}
+                  {userContext.preferences.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <Heart className="h-4 w-4 mr-2 text-pink-500" />
+                        Preferences
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {userContext.preferences.map((pref, index) => (
+                          <span key={index} className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm">
+                            {pref}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Energy & Schedule */}
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
-                    <Clock className="h-4 w-4 mr-2 text-purple-500" />
-                    Energy Level
-                  </h3>
-                  <p className="text-sm text-gray-600 bg-purple-50 p-3 rounded-lg">
-                    {userContext.energyLevel}
-                  </p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-indigo-500" />
-                    Schedule
-                  </h3>
-                  <p className="text-sm text-gray-600 bg-indigo-50 p-3 rounded-lg">
-                    {userContext.schedule}
-                  </p>
-                </div>
-              </div>
+                  {/* Challenges */}
+                  {userContext.challenges.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <Zap className="h-4 w-4 mr-2 text-orange-500" />
+                        Challenges
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {userContext.challenges.map((challenge, index) => (
+                          <span key={index} className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+                            {challenge}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Update Context Button */}
-              <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
-                Update My Context
-              </button>
+                  {/* Current Habits from Profile */}
+                  {userContext.currentHabits.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
+                        Current Habits
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {userContext.currentHabits.map((habit, index) => (
+                          <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                            {habit}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Energy & Schedule */}
+                  {(userContext.energyLevel || userContext.schedule) && (
+                    <div className="space-y-3">
+                      {userContext.energyLevel && (
+                        <div>
+                          <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                            <Clock className="h-4 w-4 mr-2 text-purple-500" />
+                            Energy Level
+                          </h3>
+                          <p className="text-sm text-gray-600 bg-purple-50 p-3 rounded-lg">
+                            {userContext.energyLevel}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {userContext.schedule && (
+                        <div>
+                          <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                            <Calendar className="h-4 w-4 mr-2 text-indigo-500" />
+                            Schedule
+                          </h3>
+                          <p className="text-sm text-gray-600 bg-indigo-50 p-3 rounded-lg">
+                            {userContext.schedule}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Personality */}
+                  {userContext.personality && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                        <Brain className="h-4 w-4 mr-2 text-indigo-500" />
+                        Personality
+                      </h3>
+                      <p className="text-sm text-gray-600 bg-indigo-50 p-3 rounded-lg">
+                        {userContext.personality}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Empty State Message */}
+                  {!userContext.goals.length && 
+                   !userContext.preferences.length && 
+                   !userContext.challenges.length && 
+                   !userContext.currentHabits.length && 
+                   !userHabits.length && 
+                   !userTodos.length && (
+                    <div className="text-center py-8">
+                      <Brain className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-sm text-gray-500 mb-4">No context data available yet</p>
+                      <p className="text-xs text-gray-400">Update your profile to help the AI coach understand you better!</p>
+                    </div>
+                  )}
+
+                  {/* Update Context Button */}
+                  <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    Update My Context
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
