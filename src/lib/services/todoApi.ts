@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8000/api/v1/todos'
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+  ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/todos`
+  : 'http://localhost:8000/api/v1/todos'
 
 export interface Todo {
   id: string

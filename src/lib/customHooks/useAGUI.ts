@@ -18,7 +18,11 @@ export function useAGUI() {
     setError(null);
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      
+      if (!backendUrl) {
+        throw new Error('NEXT_PUBLIC_BACKEND_URL environment variable is not set');
+      }
       
       // Use streaming with AGUI endpoint
       const response = await fetch(`${backendUrl}/api/v1/chat/`, {
@@ -99,7 +103,11 @@ export function useAGUI() {
     setError(null);
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      
+      if (!backendUrl) {
+        throw new Error('NEXT_PUBLIC_BACKEND_URL environment variable is not set');
+      }
       
       // Try the streaming endpoint first, but collect all content
       let fullResponse = '';
