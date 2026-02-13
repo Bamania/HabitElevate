@@ -37,10 +37,11 @@ export default function AuthCallbackPage() {
         if (data.session) {
           // Check if user has completed onboarding
           const userId = data.session.user.id;
+          console.log("UserId from data.session.user.id",userId)
           
           const { data: profileData, error: profileError } = await supabase
             .from('users_profile')
-            .select('phone, primary_goal, plan_generated_at')
+            .select('phone, challenges, currenthabits')
             .eq('id', userId)
             .maybeSingle();
           
@@ -51,7 +52,7 @@ export default function AuthCallbackPage() {
 
           // Check onboarding status
           const hasPhone = profileData?.phone;
-          const hasCompletedOnboarding = profileData?.primary_goal && profileData?.plan_generated_at;
+          const hasCompletedOnboarding = profileData?.challenges && profileData?.currenthabits;
 
           if (!hasPhone || !hasCompletedOnboarding) {
             // New user or incomplete onboarding - redirect to onboarding
