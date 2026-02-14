@@ -1,8 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Send, Bot, User, Sparkles } from 'lucide-react';
-import { useAGUI } from "../../lib/customHooks/useAGUI";
-import { useCopilotAction } from "@copilotkit/react-core"; 
+import { useAGUI } from "../../lib/customHooks/useAGUI"; 
 interface Message {
   id: string;
   content: string;
@@ -32,21 +31,6 @@ const ChatInterface = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "defaul
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  useCopilotAction({
-    name: "calling_tool",
-    available: "enabled", // Don't allow the agent or UI to call this tool as its only for rendering
-    render: ({ status, args }) => {
-      return (
-        <p className="text-gray-500 mt-2">
-          {status !== "complete" && "Calling Calling Tool..."}
-          {status === "complete" &&
-            `Called the Calling Tool for ${args.phone_number}.`}
-        </p>
-      );
-    },
-  });
-
 
   useEffect(() => {
     scrollToBottom();

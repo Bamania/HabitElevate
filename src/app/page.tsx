@@ -1,7 +1,6 @@
 "use client";
 import { Sprout } from 'lucide-react';
 import ChatInterface from "../components/chatInterface";
-import { CopilotSidebar } from '@copilotkit/react-ui';
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { SignOutButton } from '../components/auth/SignOutButton'
 
@@ -37,7 +36,6 @@ export default function Home() {
 
             {/* Chat Interface Component */}
             <ChatInterface />
-            <CopilotSidebar /> 
           </div>
         </div>
       </div>

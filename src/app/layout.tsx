@@ -3,8 +3,6 @@ import type { Metadata } from "next";
 // import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "../lib/storeprovider";
-import { CopilotKit } from "@copilotkit/react-core"; 
-import "@copilotkit/react-ui/styles.css";
 import { AuthProvider } from "../providers/AuthProvider";
 
 
@@ -33,14 +31,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-background font-sans antialiased">
         <AuthProvider>
-          <CopilotKit 
-          runtimeUrl="/api/copilotkit" 
-          agent="agno_agent"
-        >
-        <StoreProvider>
-          {children}
-        </StoreProvider>
-        </CopilotKit>
+          <StoreProvider>
+            {children}
+          </StoreProvider>
         </AuthProvider>
       </body>
     </html>
