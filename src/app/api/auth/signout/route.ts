@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import fetch from 'node-fetch'
 
 // Server-side endpoint that revokes a user's refresh tokens using the Supabase service role key.
 export async function POST(request: NextRequest) {
