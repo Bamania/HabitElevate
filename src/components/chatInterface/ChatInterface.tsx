@@ -1,7 +1,8 @@
 "use client";
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Send, Bot, User, Sparkles } from 'lucide-react';
-import { useAGUI } from "../../lib/customHooks/useAGUI"; 
+import { useChat } from "../../lib/customHooks/useChat";
+
 interface Message {
   id: string;
   content: string;
@@ -10,23 +11,23 @@ interface Message {
   isStreaming?: boolean;
 }
 
-interface AGUIChatProps {
+interface ChatProps {
   userId?: string;
   className?: string;
   onSuggestionClick?: (suggestion: string) => void;
 }
 
-interface AGUIChatRef {
+interface ChatRef {
   sendMessage: (message: string) => void;
 }
 
-const ChatInterface = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "default_user", className = "", onSuggestionClick }, ref) => {
+const ChatInterface = forwardRef<ChatRef, ChatProps>(({ userId = "default_user", className = "", onSuggestionClick }, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [prompt, setPrompt] = useState("");
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { sendMessage, isLoading, error } = useAGUI();
+  const { sendMessage, isLoading, error } = useChat();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -135,8 +136,8 @@ const ChatInterface = forwardRef<AGUIChatRef, AGUIChatProps>(({ userId = "defaul
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-800">AGUI Chat</h2>
-            <p className="text-sm text-gray-600">Powered by Agno</p>
+            <h2 className="text-lg font-semibold text-gray-800">HabitElevate Chat</h2>
+            <p className="text-sm text-gray-600">Your AI Habit Coach</p>
           </div>
         </div>
       </div>

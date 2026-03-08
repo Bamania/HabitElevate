@@ -5,7 +5,7 @@ import { Sparkles, Zap, Target, Brain, Eye, EyeOff, User, Calendar, Clock, Heart
 import { useAuth } from "../../providers/AuthProvider";
 import { createSupabaseClient } from "../../lib/supabase/client";
 import { useUIState } from "../../lib/customHooks/useUIState";
-import AGUIChatInterface from "./ChatInterface";
+import ChatInterfacePanel from "./ChatInterface";
 import ReminderForm from "../ReminderForm/index";
 
 export default function ChatInterface() {
@@ -221,15 +221,15 @@ export default function ChatInterface() {
     "Help me plan to stop procrastinating"
   ]);
 
-  const aguiChatRef = useRef<any>(null);
+  const chatRef = useRef<any>(null);
 
   const handleSuggestionClick = async (suggestion: string) => {
     // Hide suggestions when one is clicked
     setShowSuggestions(false);
     
-    // Send message directly to AGUI chat
-    if (aguiChatRef.current?.sendMessage) {
-      aguiChatRef.current.sendMessage(suggestion);
+    // Send message directly to chat
+    if (chatRef.current?.sendMessage) {
+      chatRef.current.sendMessage(suggestion);
     }
   };
 
@@ -295,9 +295,6 @@ export default function ChatInterface() {
           </p>
           
           <div className="mt-4 flex items-center justify-center space-x-2 flex-wrap">
-            <div className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-              ✨ AGUI Powered
-            </div>
             <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
               📋 Interactive Forms
             </div>
@@ -318,9 +315,8 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        {/* Main AGUI Chat Interface */}
         <div className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          <AGUIChatInterface ref={aguiChatRef} userId={user.id} className="h-full" />
+          <ChatInterfacePanel ref={chatRef} userId={user.id} className="h-full" />
         </div>
 
         {/* Quick Start Suggestions */}
