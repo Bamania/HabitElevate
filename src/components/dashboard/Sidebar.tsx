@@ -9,6 +9,7 @@ import {
   Map,
   BarChart3,
   MessageSquare,
+  Phone,
   Settings,
 } from 'lucide-react';
 
@@ -18,6 +19,7 @@ const navItems = [
   { label: 'Journey', icon: Map, href: '/dashboard/journey', disabled: true },
   { label: 'Insights', icon: BarChart3, href: '/dashboard/insights', disabled: true },
   { label: 'Coach Chat', icon: MessageSquare, href: '/dashboard', disabled: false },
+  { label: 'Voice Coach Calls', icon: Phone, href: '/dashboard/voice-calls', disabled: false },
 ];
 
 export default function Sidebar() {

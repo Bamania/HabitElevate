@@ -3,9 +3,14 @@ import axios from 'axios';
 
 interface SSEChunk {
   content?: string;
-  type: 'content' | 'done' | 'error';
+  type: string;
   error?: string;
-  message?: string;
+  data?: any;
+}
+
+export interface ToolEvent {
+  type: string;
+  data: any;
 }
 
 export function useChat() {
@@ -16,7 +21,8 @@ export function useChat() {
   const sendMessage = useCallback(async (
     message: string,
     userId?: string,
-    onChunk?: (chunk: string) => void
+    onChunk?: (chunk: string) => void,
+    onToolEvent?: (event: ToolEvent) => void
   ): Promise<string> => {
     if (requestInFlightRef.current) {
       return '';
@@ -33,7 +39,6 @@ export function useChat() {
         throw new Error('NEXT_PUBLIC_BACKEND_URL environment variable is not set');
       }
 
-      // SSE streaming requires fetch — axios doesn't support ReadableStream in browsers
       const response = await fetch(`${backendUrl}/api/v1/chat/`, {
         method: 'POST',
         headers: {
@@ -71,17 +76,17 @@ export function useChat() {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
-              const data: SSEChunk = JSON.parse(line.slice(6));
+              const chunk: SSEChunk = JSON.parse(line.slice(6));
 
-              if (data.type === 'content') {
-                accumulatedContent += data.content || '';
-                if (onChunk) {
-                  onChunk(data.content || '');
-                }
-              } else if (data.type === 'done') {
+              if (chunk.type === 'content') {
+                accumulatedContent += chunk.content || '';
+                onChunk?.(chunk.content || '');
+              } else if (chunk.type === 'done') {
                 break;
-              } else if (data.type === 'error') {
-                throw new Error(data.error || data.content || 'Unknown error');
+              } else if (chunk.type === 'error') {
+                throw new Error(chunk.error || chunk.content || 'Unknown error');
+              } else if (chunk.data !== undefined) {
+                onToolEvent?.({ type: chunk.type, data: chunk.data });
               }
             } catch (parseError) {
               if (parseError instanceof Error && parseError.message !== 'Unknown error') {

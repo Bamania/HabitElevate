@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Mic, Paperclip, Search, MoreVertical } from 'lucide-react';
+import { Send, Bot, User, Mic, Paperclip } from 'lucide-react';
 import { useAuth } from '../../providers/AuthProvider';
-import { useChat } from '../../lib/customHooks/useChat';
+import { useChat, ToolEvent } from '../../lib/customHooks/useChat';
+import GenUiElements from '../../components/GenuiElements';
 
 interface Message {
   id: string;
@@ -11,6 +12,8 @@ interface Message {
   type: 'user' | 'ai';
   timestamp: Date;
   isStreaming?: boolean;
+  uiType?: string;
+  uiData?: any;
 }
 
 export default function DashboardPage() {
@@ -63,14 +66,25 @@ export default function DashboardPage() {
 
     try {
       let accumulated = '';
-      await sendMessage(text, userId, (chunk: string) => {
-        accumulated += chunk;
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === aiMsgId ? { ...m, content: accumulated, isStreaming: true } : m
-          )
-        );
-      });
+      await sendMessage(
+        text,
+        userId,
+        (chunk: string) => {
+          accumulated += chunk;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === aiMsgId ? { ...m, content: accumulated, isStreaming: true } : m
+            )
+          );
+        },
+        (event: ToolEvent) => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === aiMsgId ? { ...m, uiType: event.type, uiData: event.data } : m
+            )
+          );
+        }
+      );
 
       setMessages((prev) =>
         prev.map((m) => (m.id === aiMsgId ? { ...m, isStreaming: false } : m))
@@ -86,9 +100,7 @@ export default function DashboardPage() {
     }
   };
 
-  const formatTime = (date: Date) =>
-    date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
+ 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Messages area */}
@@ -149,27 +161,29 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Bubble */}
-                <div>
-                  <div
-                    className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                      message.type === 'user'
-                        ? 'rounded-br-md bg-blue-600 text-white'
-                        : 'rounded-bl-md border border-gray-100 bg-white text-gray-800 shadow-sm'
-                    }`}
-                  >
-                    <span className="whitespace-pre-wrap">{message.content}</span>
-                    {message.isStreaming && (
-                      <span className="ml-1 inline-block h-4 w-1.5 animate-pulse rounded-full bg-gray-400" />
-                    )}
-                  </div>
-                  <p
-                    className={`mt-1 text-[11px] text-gray-400 ${
-                      message.type === 'user' ? 'text-right' : ''
-                    }`}
-                  >
-                    {message.isStreaming ? 'Typing...' : `Read ${formatTime(message.timestamp)}`}
-                  </p>
+                {/* Bubble OR GenUI widget */}
+                <div className="flex flex-col gap-2">
+                  {message.uiType && message.uiData && !message.isStreaming ? (
+                    <GenUiElements type={message.uiType} data={message.uiData} />
+                  ) : (
+                    <div
+                      className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                        message.type === 'user'
+                          ? 'rounded-br-md bg-blue-600 text-white'
+                          : 'rounded-bl-md border border-gray-100 bg-white text-gray-800 shadow-sm'
+                      }`}
+                    >
+                      {message.isStreaming && !message.content ? (
+                        <div className="flex items-center gap-1.5 py-1 px-1">
+                          <span className="h-2 w-2 rounded-full bg-gray-400 animate-dot-bounce-1" />
+                          <span className="h-2 w-2 rounded-full bg-gray-400 animate-dot-bounce-2" />
+                          <span className="h-2 w-2 rounded-full bg-gray-400 animate-dot-bounce-3" />
+                        </div>
+                      ) : (
+                        <span className="whitespace-pre-wrap">{message.content}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

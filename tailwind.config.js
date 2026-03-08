@@ -54,6 +54,17 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        'dot-bounce': {
+          '0%, 80%, 100%': { transform: 'translateY(0)' },
+          '40%': { transform: 'translateY(-5px)' },
+        },
+      },
+      animation: {
+        'dot-bounce-1': 'dot-bounce 0.7s  ease-in-out infinite',
+        'dot-bounce-2': 'dot-bounce 0.7s ease-in-out 0.2s infinite',
+        'dot-bounce-3': 'dot-bounce 0.7s ease-in-out 0.4s infinite',
+      },
     },
   },
   plugins: [],
