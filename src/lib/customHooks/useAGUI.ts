@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 interface AGUIResponse {
   content: string;
@@ -8,12 +8,20 @@ interface AGUIResponse {
 export function useAGUI() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestInFlightRef = useRef(false);
 
   const sendMessage = useCallback(async (
     message: string, 
     userId?: string,
     onChunk?: (chunk: string) => void
   ): Promise<string> => {
+    // Prevent duplicate requests
+    if (requestInFlightRef.current) {
+      console.log('⚠️ Request already in flight, skipping duplicate');
+      return '';
+    }
+
+    requestInFlightRef.current = true;
     setIsLoading(true);
     setError(null);
 
@@ -84,7 +92,8 @@ export function useAGUI() {
       }
 
       return accumulatedContent;
-
+requestInFlightRef.current = false;
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
@@ -99,6 +108,13 @@ export function useAGUI() {
     message: string,
     userId?: string
   ): Promise<string> => {
+    // Prevent duplicate requests
+    if (requestInFlightRef.current) {
+      console.log('⚠️ Request already in flight, skipping duplicate');
+      return '';
+    }
+
+    requestInFlightRef.current = true;
     setIsLoading(true);
     setError(null);
 
@@ -169,7 +185,8 @@ export function useAGUI() {
         const data = await response.json();
         return data.response || data.content || 'No response received';
       }
-
+requestInFlightRef.current = false;
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);

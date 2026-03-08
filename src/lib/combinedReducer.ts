@@ -1,8 +1,10 @@
 import { combineReducers } from 'redux'
-import { aiGeneratedSlice } from './features/aiGeneratedslice/GeneratedSlice'
+import todoReducer from './features/todoSlice/todoSlice';
+import uiStateReducer from './features/uiStateSlice/uiStateSlice';
 
 const rootReducer = combineReducers({
-  GENERATED_TEXT: aiGeneratedSlice.reducer,
+  todos: todoReducer,
+  uiState: uiStateReducer,
 })
 
 export default rootReducer;
